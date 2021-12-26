@@ -1,0 +1,25 @@
+{
+  "name": "tapestry-server",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/app.js",
+    "start:dev": "nodemon --exec babel-node src/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.5",
+    "@babel/node": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "express": "^4.17.2",
+    "nodemon": "^2.0.15"
+  },
+  "babel" : {
+    "presets" : ["@babel/preset-env"]
+  }
+}
