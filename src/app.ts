@@ -1,8 +1,30 @@
 import express from "express";
+import cors from "cors";
+import authRouter from "./routes/auth";
+import Mongoose from "mongoose";
 
 const app = express();
 
-app.get(`/`, (req, res, next) => {
+//Express 4.x버전부터 body-parser모듈 내장
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+const mongoUrl = "mongodb://localhost:27017/tapestry";
+console.log(mongoUrl);
+Mongoose.connect(mongoUrl)
+  .then(() => {
+    console.log("Connect!!");
+  })
+  .catch((e) => {
+    console.log(`Error!`, e);
+  });
+
+app.use("/auth", authRouter);
+app.use("/post", (req, res, next) => {
+  res.send("Hello!!");
+});
+app.use("/group", (req, res, next) => {
   res.send("Hello!!");
 });
 
@@ -11,4 +33,3 @@ const port = 5000;
 app.listen(port, () => {
   console.log(`listening port ${port}`);
 });
-
