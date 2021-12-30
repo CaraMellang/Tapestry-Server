@@ -1,5 +1,5 @@
 import express from "express";
-import RootModel from "../Model/RootModel";
+import RootModel from "../Schema/RootModel";
 
 const userModel = RootModel.userModel();
 
@@ -7,9 +7,9 @@ const authRouter = express.Router();
 
 authRouter.post(`/signup`, (req, res, next) => {
   const User = new userModel({
-    email: "dd@naver.com",
+    email: "test@naver.com",
     password: "1234",
-    user_name: "dd",
+    user_name: "test",
   });
   User.save();
   userModel
