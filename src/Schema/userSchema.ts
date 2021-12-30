@@ -1,5 +1,6 @@
 import Mongoose from "mongoose";
 import bcript from "bcrypt";
+import { userSchemaAsyncWrap } from "../lib/asyncWrap";
 
 const saltRounds = 8;
 
@@ -18,7 +19,7 @@ export default function userModel() {
     provider: { type: String, default: null },
   });
 
-  userSchema.pre("save", async function (next) { //*** 제대로 작동안함!! *** 라이브러리로 감싸주자/
+  userSchema.pre("save", async function (next){ //*** 제대로 작동안할수 있음!! ***
     const user = this; //여기서 this는 저장할 객체의 정보를 담고있음.
     
     if (user.isModified("password")) {
