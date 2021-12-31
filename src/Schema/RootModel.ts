@@ -4,10 +4,18 @@ import parantCommentModel from "./parantCommentSchema";
 import groupModel from "./groupSchema";
 import childCommentModel from "./childCommentSchema";
 
-export default {
-  userModel,
+// function RootModel(){
+//   const userModel = userModel()
+//   return
+// }
+
+const UserModel = userModel();
+const GroupModel = groupModel();
+
+export {
+  UserModel,
+  GroupModel,
   postModel,
   parantCommentModel,
-  groupModel,
   childCommentModel,
 };

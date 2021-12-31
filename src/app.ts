@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import authRouter from "./routes/auth";
 import Mongoose from "mongoose";
+import groupRouter from "./routes/group";
 
 const app = express();
 
@@ -21,10 +22,8 @@ Mongoose.connect(mongoUrl)
   });
 
 app.use("/auth", authRouter);
+app.use("/group", groupRouter);
 app.use("/post", (req, res, next) => {
-  res.send("Hello!!");
-});
-app.use("/group", (req, res, next) => {
   res.send("Hello!!");
 });
 

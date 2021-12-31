@@ -13,9 +13,17 @@ export default {
   },
   verify: (token: string) => {
     const decoded = Jwt.decode(token);
-    return {
-      status: "ok",
-      decoded,
-    };
+    try {
+      return {
+        status: true,
+        decoded,
+      };
+    } catch (err: any) {
+      return {
+        status: false,
+        message: "decode failed",
+        err: err.message,
+      };
+    }
   },
 };
