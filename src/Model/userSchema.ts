@@ -16,18 +16,20 @@ export default function userModel() {
     user_img: { type: String, default: null },
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },
+    social_id: { type: String, default: null },
     provider: { type: String, default: null },
   });
 
-  userSchema.pre("save", async function (next){ //*** 제대로 작동안할수 있음!! ***
+  userSchema.pre("save", async function (next) {
+    //*** 제대로 작동안할수 있음!! ***
     const user = this; //여기서 this는 저장할 객체의 정보를 담고있음.
-    
+
     if (user.isModified("password")) {
       try {
-        const salt =  await bcript.genSalt(saltRounds);
-        const hashedpassword = await bcript.hash(user.password,salt)
+        const salt = await bcript.genSalt(saltRounds);
+        const hashedpassword = await bcript.hash(user.password, salt);
         user.password = hashedpassword;
-        next()
+        next();
       } catch (err: any) {
         console.log(err);
         return next(err);

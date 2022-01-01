@@ -3,6 +3,7 @@ import cors from "cors";
 import authRouter from "./routes/auth";
 import Mongoose from "mongoose";
 import groupRouter from "./routes/group";
+import postRouter from "./routes/post";
 
 const app = express();
 
@@ -23,9 +24,7 @@ Mongoose.connect(mongoUrl)
 
 app.use("/auth", authRouter);
 app.use("/group", groupRouter);
-app.use("/post", (req, res, next) => {
-  res.send("Hello!!");
-});
+app.use("/post", postRouter);
 
 const port = 5000;
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { UserModel } from "../Schema/RootModel";
+import { UserModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
 
