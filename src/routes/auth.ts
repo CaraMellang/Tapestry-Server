@@ -19,7 +19,7 @@ authRouter.post(`/signup`, async (req, res, next) => {
   const User = new UserModel({
     email,
     password,
-    username,
+    user_name: username,
     created_at: curr,
   });
   try {
@@ -59,7 +59,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
       return res.status(200).send({
         status: 200,
         message: "signin Success",
-        data: { accessToken },
+        data: { email, username, accessToken },
       });
     }
   } catch (err) {
