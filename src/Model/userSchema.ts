@@ -13,6 +13,7 @@ export default function userModel() {
     },
     password: { type: String, required: true },
     user_name: { type: String },
+    follow:{type:Array,default:[]},
     user_img: { type: String, default: null },
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },

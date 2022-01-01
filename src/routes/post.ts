@@ -60,10 +60,11 @@ postRouter.post(`/create`, async (req: any, res, next) => {
 
 postRouter.post(`/read`, async (req: any, res, next) => {
   const {
-    body: { group_id },
+    body: { group_id, page },
   }: {
     body: {
       group_id: string;
+      page: number;
     };
   } = req;
   try {
@@ -74,10 +75,9 @@ postRouter.post(`/read`, async (req: any, res, next) => {
         .send({ status: 404, message: "group is not found" });
     const Posts = await PostModel.find({ group_id })
       .sort({ created_at: -1 }) //내림차순 정렬
-      .skip(0) //건너뛸 문서
+      .skip((page - 1) * 10) //건너뛸 문서
       .limit(10) //가져울 문서 제한
       .exec();
-    console.log(Posts);
     res.status(200).send({ status: 200, message: "success read", data: Posts });
   } catch (err) {
     res.status(500).send({ status: 500, message: "Failed", err });
