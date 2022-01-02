@@ -85,4 +85,18 @@ postRouter.post(`/read`, async (req: any, res, next) => {
   }
 });
 
+postRouter.get(`/readall`, async (req, res, next) => {
+  try {
+    const findPosts = await PostModel.find().sort({ created_at: -1 }).limit(5);
+    if (!findPosts)
+      return res.status(404).send({ status: 404, message: "post not found" });
+    return res
+      .status(200)
+      .send({ status: 200, message: "success read", data: findPosts });
+  } catch (err) {
+    res.status(500).send({ status: 500, message: "Failed", err });
+    next(err);
+  }
+});
+
 export default postRouter;
