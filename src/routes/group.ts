@@ -1,4 +1,4 @@
-import express from "express";
+import express,{ NextFunction,Request,Response} from "express";
 import { UserModel, GroupModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
@@ -8,16 +8,19 @@ import jwt from "../lib/jwt";
 
 const groupRouter = express.Router();
 
-groupRouter.post("/create", async (req: any, res, next) => {
+groupRouter.post("/create", async (req: Request, res, next) => {
   const {
     body: { group_name, group_description, group_img },
   }: {
     body: { group_name: string; group_description: string; group_img: string };
   } = req;
 
-  const splitArray = req.headers.authorization.split(` `);
-  const token = splitArray[1];
-  const verifyToken: any = jwt.verify(token);
+  const authToken = req.headers[`authorization`]
+  if(!authToken){
+    return res.status(401).send({status:401,message:"Unauthorized Token"})
+  }
+  const token = authToken.split(` `)[1]
+  const verifyToken:any = jwt.verify(token);
 
   const date = new Date();
   const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
@@ -25,7 +28,7 @@ groupRouter.post("/create", async (req: any, res, next) => {
 
   if (verifyToken.status) {
     try {
-      const verifyGroupName = await GroupModel.findOne({}).exec();
+      const verifyGroupName = await GroupModel.findOne({group_name}).exec();
       if (verifyGroupName) {
         return res
           .status(400)

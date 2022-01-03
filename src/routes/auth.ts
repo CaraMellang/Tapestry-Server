@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { UserModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
@@ -68,10 +68,14 @@ authRouter.post(`/signin`, async (req, res, next) => {
   }
 });
 
-authRouter.post("/verify", async (req: any, res, next) => {
-  const splitArray = req.headers.authorization.split(` `);
-  const token = splitArray[1];
+authRouter.post("/verify", async (req: Request, res, next) => {
+  const authToken = req.headers[`authorization`];
+  if (!authToken) {
+    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
+  }
+  const token = authToken.split(` `)[1];
   const verifyToken = jwt.verify(token);
+
   if (verifyToken.status) {
     return res.status(200).send({
       status: 200,

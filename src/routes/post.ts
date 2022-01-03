@@ -1,10 +1,10 @@
-import express from "express";
+import express,{ NextFunction,Request,Response} from "express";
 import jwt from "../lib/jwt";
 import { GroupModel, PostModel, UserModel } from "../Model/RootModel";
 
 const postRouter = express.Router();
 
-postRouter.post(`/create`, async (req: any, res, next) => {
+postRouter.post(`/create`, async (req: Request, res, next) => {
   const {
     body: { group_id, email, is_private, text, images },
   }: {
@@ -16,8 +16,11 @@ postRouter.post(`/create`, async (req: any, res, next) => {
       images: string[];
     };
   } = req;
-  const splitArray = req.headers.authorization.split(` `);
-  const token = splitArray[1];
+  const authToken = req.headers[`authorization`]
+  if(!authToken){
+    return res.status(401).send({status:401,message:"Unauthorized Token"})
+  }
+  const token = authToken.split(` `)[1]
   const verifyToken = jwt.verify(token);
 
   const date = new Date();
@@ -58,7 +61,7 @@ postRouter.post(`/create`, async (req: any, res, next) => {
   }
 });
 
-postRouter.post(`/read`, async (req: any, res, next) => {
+postRouter.post(`/read`, async (req: Request, res, next) => {
   const {
     body: { group_id, page },
   }: {

@@ -12,8 +12,8 @@ export default {
     });
   },
   verify: (token: string) => {
-    const decoded = Jwt.decode(token);
     try {
+      const decoded = Jwt.verify(token,secret);
       return {
         status: true,
         decoded,
