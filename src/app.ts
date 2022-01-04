@@ -5,6 +5,7 @@ import Mongoose from "mongoose";
 import groupRouter from "./routes/group";
 import postRouter from "./routes/post";
 import followRouter from "./routes/follow";
+import commentRouter from "./routes/comment";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/auth", authRouter);
 app.use("/group", groupRouter);
 app.use("/post", postRouter);
 app.use("/follow", followRouter);
+app.use("/comment", commentRouter);
 
 const port = 5000;
 
