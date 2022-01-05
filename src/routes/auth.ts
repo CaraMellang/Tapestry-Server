@@ -7,16 +7,23 @@ import passport from "passport";
 
 const authRouter = express.Router();
 
-authRouter.get(`/google`,passport.authenticate('google',{scope:['profile']}))
+authRouter.get(
+  `/google`,
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
 
-authRouter.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/signin' }),
-  function(req, res) {
+authRouter.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/signin" }),
+  function (req, res:any) {
     // Successful authentication, redirect home.
-    console.log("Redirect!!!!")
+    console.log("Redirect!!!!");
+    console.log(res.req.user.data);
+    console.log("니구구",req.body);
     // res.redirect('/');
-    res.send({data:`${req}`})
-  });
+    res.send({ data: `${req}` });
+  }
+);
 
 authRouter.post(`/signup`, async (req, res, next) => {
   const {

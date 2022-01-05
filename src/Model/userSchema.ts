@@ -10,9 +10,10 @@ export default function userModel() {
       type: String,
       required: true,
       match: /.+\@.+\..+/, //email 패턴이 아니면 저장 X => 수정필요  //이게맞는지 모르겠음..
+      default: null
     },
-    password: { type: String, required: true },
-    user_name: { type: String },
+    password: { type: String, required: true,default: null },
+    user_name: { type: String ,default: null},
     follow: { type: [String], default: [] },
     user_img: { type: String, default: null },
     created_at: { type: Date, default: null },
