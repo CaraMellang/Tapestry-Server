@@ -2,11 +2,20 @@ import express, { NextFunction, Request, Response } from "express";
 import { UserModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
-
+import passport from "passport";
 // const userModel = RootModel.userModel();
 
 const authRouter = express.Router();
 
+authRouter.get(`/google`,passport.authenticate('google',{scope:['profile']}))
+
+authRouter.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
+  
 authRouter.post(`/signup`, async (req, res, next) => {
   const {
     body: { email, password, username },
