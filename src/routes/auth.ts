@@ -10,12 +10,14 @@ const authRouter = express.Router();
 authRouter.get(`/google`,passport.authenticate('google',{scope:['profile']}))
 
 authRouter.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { failureRedirect: '/signin' }),
   function(req, res) {
     // Successful authentication, redirect home.
-    res.redirect('/');
+    console.log("Redirect!!!!")
+    // res.redirect('/');
+    res.send({data:`${req}`})
   });
-  
+
 authRouter.post(`/signup`, async (req, res, next) => {
   const {
     body: { email, password, username },
