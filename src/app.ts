@@ -16,24 +16,27 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-app.use(
-  session({
-    secret: "key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// app.use(
+//   session({
+//     name:"session",
+//     secret: "key",
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
-passport.serializeUser(function(user:any, done) {
-  done(null, user);
-});
+// passport.serializeUser(function(user:any, done) {
+//   console.log("serial",user)
+//   done(null, user);
+// });
 
-passport.deserializeUser(function(user:any, done) {
-  done(null, user);
-});
+// passport.deserializeUser(function(user:any, done) {
+//   console.log("deserial",user)
+//   done(null, user);
+// });
 
 GooglePassportStrategy(passport);
 

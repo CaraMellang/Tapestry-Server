@@ -1,7 +1,7 @@
 import GoogleOauth, { Profile } from "passport-google-oauth20";
 // import passport from "passport";
 import dotenv from "dotenv";
-import { PassportStatic } from "passport";
+import passport, { PassportStatic } from "passport";
 import { UserModel } from "../Model/RootModel";
 
 function GooglePassportStrategy(passport: PassportStatic) {
@@ -31,7 +31,7 @@ function GooglePassportStrategy(passport: PassportStatic) {
           if (User === null) {
             let User = new UserModel({
               email: emails[0].value,
-              password: "google",
+              // password: "google",
               social_id: profile.id,
               user_name: profile.displayName,
               user_img: photos[0].value,

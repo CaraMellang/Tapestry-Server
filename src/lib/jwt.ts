@@ -5,7 +5,7 @@ dotenv.config(); //.env 사용
 const secret: any = process.env.SECRET;
 
 export default {
-  sign: (user: { email: string; username: string }) => {
+  sign: (user: any) => {
     return Jwt.sign(user, secret, {
       algorithm: "HS256",
       expiresIn: "1h",

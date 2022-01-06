@@ -14,16 +14,33 @@ authRouter.get(
 
 authRouter.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/signin" }),
-  function (req, res:any) {
+  passport.authenticate("google", {
+    session: false, // passport 세션 비활성화
+    failureRedirect: "/",
+  }),
+  function (req, res: any) {
     // Successful authentication, redirect home.
-    console.log("Redirect!!!!");
-    console.log(res.req.user.data);
-    console.log("니구구",req.body);
+    console.log("callback", res.req.user.data.User);
+    const aceessToken = jwt.sign(res.req.user.data.User.toJSON());
     // res.redirect('/');
-    res.send({ data: `${req}` });
+    res.send({ data: aceessToken });
   }
 );
+
+// const authenticateUser = (req: Request, res: Response, next: NextFunction) => { // 세션사용시 사용한 코드
+//   if (req.isAuthenticated()) {
+//     next();
+//   } else {
+//     res.status(301).redirect("/");
+//   }
+// };
+// authRouter.get(
+//   "/googleverify",
+//   authenticateUser,
+//   function (req: Request, res: Response, next: NextFunction) {
+//     res.status(201).send({ status: 201, message: "success verify" });
+//   }
+// );
 
 authRouter.post(`/signup`, async (req, res, next) => {
   const {
@@ -39,6 +56,7 @@ authRouter.post(`/signup`, async (req, res, next) => {
     password,
     user_name: username,
     created_at: curr,
+    provider: "local",
   });
   try {
     let findUser = await UserModel.findOne({ email }).exec();
