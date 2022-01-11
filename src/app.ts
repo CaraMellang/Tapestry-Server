@@ -9,12 +9,14 @@ import followRouter from "./routes/follow";
 import commentRouter from "./routes/comment";
 import GooglePassportStrategy from "./lib/passport";
 import passport from "passport";
+// import cookieParser from "cookie-parser"; 
 
 const app = express();
 
 //Express 4.x버전부터 body-parser모듈 내장
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// app.use(cookieParser());
 app.use(cors());
 // app.use(
 //   session({
