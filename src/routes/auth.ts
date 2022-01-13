@@ -23,11 +23,12 @@ authRouter.get(
     console.log("callback", res.req.user.data.User);
     const aceessToken = jwt.sign(res.req.user.data.User.toJSON());
 
-    
-    return res.cookie("access_token", aceessToken, {
-      // httpOnly: true,
-      maxAge: 60 * 60 * 1000,
-    }).redirect("http://localhost:3000");
+    return res
+      .cookie("access_token", aceessToken, {
+        // httpOnly: true,
+        maxAge: 60 * 60 * 1000,
+      })
+      .redirect("http://localhost:3000");
   }
 );
 
@@ -82,10 +83,13 @@ authRouter.post(`/signin`, async (req, res, next) => {
     body: { email, password },
   }: { body: { email: string; password: string } } = req;
   try {
-    let findUser = await UserModel.findOne({ email });
-    let { user_name, created_at, _id } = findUser;
+    let findUser = await UserModel.findOne({ email }).populate({
+      path: "follow",
+      select: ["user_name", "email", "user_img"],
+    });
+    let { user_name, created_at, _id, user_img, follow } = findUser;
     if (findUser === null) {
-      return res.status(404).send({ status: 404, message: "email not found" });
+      return res.status(404).send({ status: 404, message: "user not found" });
     } else {
       const comparedPassword = await bcrypt.compare(
         password.toString(),
@@ -96,7 +100,13 @@ authRouter.post(`/signin`, async (req, res, next) => {
           .status(401)
           .send({ status: 401, message: "Passwords do not match." });
       }
-      const accessToken = jwt.sign({ email, user_name, created_at });
+      const accessToken = jwt.sign({
+        email,
+        user_name,
+        created_at,
+        user_img,
+        follow,
+      });
       // res.cookie("access_token", accessToken, {
       //   httpOnly: true,
       //   maxAge: 60 * 60 * 1000,
@@ -109,6 +119,8 @@ authRouter.post(`/signin`, async (req, res, next) => {
           email,
           username: user_name,
           createdAt: created_at,
+          user_img,
+          follow,
           accessToken,
         },
       });
@@ -125,25 +137,39 @@ authRouter.post("/verify", async (req: Request, res, next) => {
     return res.status(401).send({ status: 401, message: "Unauthorized Token" });
   }
   const token = authToken.split(` `)[1];
-  const verifyToken:any = jwt.verify(token);
-
-  if (verifyToken.status) {
-    return res.status(201).send({
-      status: 200,
-      message: "verify token Success",
-      data: {
-        userId: verifyToken.decoded._id,
-        email :verifyToken.decoded.email,
-        username: verifyToken.decoded.user_name,
-        createdAt: verifyToken.decoded.created_at,
-      },
-    });
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
+  const verifyToken: any = jwt.verify(token);
+  try {
+    if (verifyToken.status) {
+      let findUser = await UserModel.findOne({
+        email: verifyToken.decoded.email,
+      }).populate({
+        path: "follow",
+        select: ["user_name", "email", "user_img"],
+      });
+      let { email, user_name, created_at, _id, user_img, follow } = findUser;
+      return res.status(201).send({
+        status: 200,
+        message: "verify token Success",
+        data: {
+          userId: _id,
+          email: email,
+          username: user_name,
+          createdAt: created_at,
+          user_img: user_img,
+          follow: follow,
+          accessToken: token,
+        },
+      });
+    } else {
+      return res.status(401).send({
+        status: 401,
+        message: "Unauthorized Token",
+        err: verifyToken.err,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ status: 400, message: "err" });
   }
 });
 

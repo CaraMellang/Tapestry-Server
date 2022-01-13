@@ -76,7 +76,7 @@ postRouter.post(`/read`, async (req: Request, res, next) => {
       return res
         .status(404)
         .send({ status: 404, message: "group is not found" });
-    const Posts = await PostModel.find({ group_id })
+    const Posts = await PostModel.find({ group_id }).populate(["group_id","owner_id"])
       .sort({ created_at: -1 }) //내림차순 정렬
       .skip((page - 1) * 10) //건너뛸 문서
       .limit(10) //가져울 문서 제한
