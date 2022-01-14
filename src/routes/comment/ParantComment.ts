@@ -41,7 +41,8 @@ ParantCommentRouter.post(`/read`, async (req: Request, res, next) => {
           text,
           created_at: curr,
         });
-        await ParantComment.Save();
+        await ParantComment.save();
+        await PostModel.findOneAndUpdate({_id:post_id},{$push:{comment:ParantComment._id}})
         return res
           .status(200)
           .send({ status: 200, message: "success parantComment save" });

@@ -13,6 +13,7 @@ export default function parantCommentModel() {
       ref: "User",
     },
     text: { type: String, required: true },
+    child_comment: { type: Array, default: [], ref: "ChildComment" },
     like_count: { type: Number, default: 0 },
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },

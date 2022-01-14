@@ -1,6 +1,6 @@
 import express,{ NextFunction,Request,Response} from "express";
 import jwt from "../lib/jwt";
-import { GroupModel, PostModel, UserModel } from "../Model/RootModel";
+import { GroupModel, ParantCommentModel, PostModel, UserModel } from "../Model/RootModel";
 
 const postRouter = express.Router();
 
@@ -76,11 +76,11 @@ postRouter.post(`/read`, async (req: Request, res, next) => {
       return res
         .status(404)
         .send({ status: 404, message: "group is not found" });
-    const Posts = await PostModel.find({ group_id }).populate(["group_id","owner_id"])
+    const Posts = await PostModel.find({ group_id }).populate(["group_id","owner_id"]).populate({path:"comment",populate:{path:"owner_id",select:["user_name", "email", "user_img"]}})
       .sort({ created_at: -1 }) //내림차순 정렬
       .skip((page - 1) * 10) //건너뛸 문서
       .limit(10) //가져울 문서 제한
-      .exec();
+    
     res.status(200).send({ status: 200, message: "success read", data: Posts });
   } catch (err) {
     res.status(500).send({ status: 500, message: "Failed", err });

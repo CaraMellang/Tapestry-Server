@@ -103,9 +103,9 @@ authRouter.post(`/signin`, async (req, res, next) => {
       const accessToken = jwt.sign({
         email,
         user_name,
-        created_at,
-        user_img,
-        follow,
+        // created_at,
+        // user_img,
+        // follow,
       });
       // res.cookie("access_token", accessToken, {
       //   httpOnly: true,

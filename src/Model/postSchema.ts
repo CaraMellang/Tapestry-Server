@@ -14,6 +14,7 @@ export default function postModel() {
     },
     is_private: { type: Boolean, default: false },
     text: { type: String, default: "" },
+    comment: { type: Array, default: [], ref: "ParantComment" },
     images: { type: Array, default: [] },
     views: { type: Number, default: 0 },
     like_count: { type: Number, default: 0 },
