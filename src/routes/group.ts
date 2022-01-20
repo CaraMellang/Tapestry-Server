@@ -1,10 +1,7 @@
-import express,{ NextFunction,Request,Response} from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { UserModel, GroupModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
-
-// const groupModel = RootModel.groupModel();
-// const userModel = RootModel.userModel();
 
 const groupRouter = express.Router();
 
@@ -15,12 +12,12 @@ groupRouter.post("/create", async (req: Request, res, next) => {
     body: { group_name: string; group_description: string; group_img: string };
   } = req;
 
-  const authToken = req.headers[`authorization`]
-  if(!authToken){
-    return res.status(401).send({status:401,message:"Unauthorized Token"})
+  const authToken = req.headers[`authorization`];
+  if (!authToken) {
+    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
   }
-  const token = authToken.split(` `)[1]
-  const verifyToken:any = jwt.verify(token);
+  const token = authToken.split(` `)[1];
+  const verifyToken: any = jwt.verify(token);
 
   const date = new Date();
   const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
@@ -28,7 +25,7 @@ groupRouter.post("/create", async (req: Request, res, next) => {
 
   if (verifyToken.status) {
     try {
-      const verifyGroupName = await GroupModel.findOne({group_name}).exec();
+      const verifyGroupName = await GroupModel.findOne({ group_name }).exec();
       if (verifyGroupName) {
         return res
           .status(400)
@@ -36,7 +33,7 @@ groupRouter.post("/create", async (req: Request, res, next) => {
       }
       const user = await UserModel.findOne({
         email: verifyToken.decoded.email,
-      }).exec();
+      });
 
       if (!user)
         return res
@@ -58,6 +55,68 @@ groupRouter.post("/create", async (req: Request, res, next) => {
         data: createdGroupData,
       });
     } catch (err) {
+      res.status(500).send({ status: 500, message: "Failed", err });
+      next(err);
+    }
+  } else {
+    return res.status(401).send({
+      status: 401,
+      message: "Unauthorized Token",
+      err: verifyToken.err,
+    });
+  }
+});
+
+groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
+  const {
+    body: { group_id },
+  }: {
+    body: { group_id: string };
+  } = req;
+
+  const authToken = req.headers[`authorization`];
+  if (!authToken) {
+    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
+  }
+  const token = authToken.split(` `)[1];
+  const verifyToken: any = jwt.verify(token);
+  if (verifyToken.status) {
+    try {
+      const isExistGroup = await GroupModel.findOne({ _id: group_id });
+      if (!isExistGroup) {
+        return res
+          .status(404)
+          .send({ status: 400, message: "this group not found!!" });
+      }
+      // const user = await UserModel.findOne({
+      //   email: verifyToken.decoded.email,
+      // });
+      // if (!user) {
+      //   return res
+      //     .status(404)
+      //     .send({ status: 404, message: "user not found!" });
+      // }
+      const findUserFollow = await UserModel.findOne({ email: verifyToken.decoded.email })
+        .where("group")
+        .in([group_id]);
+
+      if (findUserFollow !== null) {
+        return res
+          .status(400)
+          .send({ status: 400, message: "This user has been group!" });
+      }
+
+      await UserModel.findOneAndUpdate(
+        { email: verifyToken.decoded.email },
+        { $push: { group: group_id } }
+      );
+
+      return res.status(201).send({
+        status: 201,
+        message: "success join group",
+      });
+    } catch (err) {
+      console.log(err);
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }

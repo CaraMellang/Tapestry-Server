@@ -87,7 +87,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
       path: "follow",
       select: ["user_name", "email", "user_img"],
     });
-    let { user_name, created_at, _id, user_img, follow } = findUser;
+    let { user_name, created_at, _id, user_img, follow, group } = findUser;
     if (findUser === null) {
       return res.status(404).send({ status: 404, message: "user not found" });
     } else {
@@ -121,6 +121,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
           createdAt: created_at,
           user_img,
           follow,
+          group,
           accessToken,
         },
       });
@@ -146,7 +147,8 @@ authRouter.post("/verify", async (req: Request, res, next) => {
         path: "follow",
         select: ["user_name", "email", "user_img"],
       });
-      let { email, user_name, created_at, _id, user_img, follow } = findUser;
+      let { email, user_name, created_at, _id, user_img, follow, group } =
+        findUser;
       return res.status(201).send({
         status: 200,
         message: "verify token Success",
@@ -157,6 +159,7 @@ authRouter.post("/verify", async (req: Request, res, next) => {
           createdAt: created_at,
           user_img: user_img,
           follow: follow,
+          group: group,
           accessToken: token,
         },
       });
