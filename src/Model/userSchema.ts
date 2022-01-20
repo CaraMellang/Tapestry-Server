@@ -15,6 +15,7 @@ export default function userModel() {
     password: { type: String, default:null },
     user_name: { type: String ,default: null},
     follow: { type: [String], default: [] ,ref:"User"},
+    group:{type:[String] , default:[] , ref:"Group"},
     user_img: { type: String, default: null },
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },
