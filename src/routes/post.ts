@@ -1,6 +1,11 @@
-import express,{ NextFunction,Request,Response} from "express";
+import express, { NextFunction, Request, Response } from "express";
 import jwt from "../lib/jwt";
-import { GroupModel, ParantCommentModel, PostModel, UserModel } from "../Model/RootModel";
+import {
+  GroupModel,
+  ParantCommentModel,
+  PostModel,
+  UserModel,
+} from "../Model/RootModel";
 
 const postRouter = express.Router();
 
@@ -16,11 +21,11 @@ postRouter.post(`/create`, async (req: Request, res, next) => {
       images: string[];
     };
   } = req;
-  const authToken = req.headers[`authorization`]
-  if(!authToken){
-    return res.status(401).send({status:401,message:"Unauthorized Token"})
+  const authToken = req.headers[`authorization`];
+  if (!authToken) {
+    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
   }
-  const token = authToken.split(` `)[1]
+  const token = authToken.split(` `)[1];
   const verifyToken = jwt.verify(token);
 
   const date = new Date();
@@ -63,24 +68,54 @@ postRouter.post(`/create`, async (req: Request, res, next) => {
 
 postRouter.post(`/read`, async (req: Request, res, next) => {
   const {
-    body: { group_id, page },
+    body: { group_id, group_arr, page },
   }: {
     body: {
       group_id: string;
       page: number;
+      group_arr: string[];
     };
   } = req;
   try {
-    const isExistGroup = await GroupModel.findOne({ group_id }).exec();
-    if (!isExistGroup)
+    const isExistGroupArr = await GroupModel.find({ _id: group_arr });
+    if (!isExistGroupArr) {
       return res
         .status(404)
         .send({ status: 404, message: "group is not found" });
-    const Posts = await PostModel.find({ group_id }).populate(["group_id","owner_id"]).populate({path:"comment",populate:{path:"owner_id",select:["user_name", "email", "user_img"]}})
+    }
+    const Posts = await PostModel.find({ group_id: group_arr })
+      .populate([
+        "group_id",
+        { path: "owner_id", select: ["user_name", "email", "user_img"] },
+      ])
+      .populate({
+        path: "comment",
+        populate: {
+          path: "owner_id",
+          select: ["user_name", "email", "user_img"],
+        },
+      })
       .sort({ created_at: -1 }) //내림차순 정렬
       .skip((page - 1) * 10) //건너뛸 문서
-      .limit(10) //가져울 문서 제한
-    
+      .limit(10); //가져울 문서 제한
+    // const isExistGroup = await GroupModel.findOne({ group_id }).exec();
+    // if (!isExistGroup)
+    //   return res
+    //     .status(404)
+    //     .send({ status: 404, message: "group is not found" });
+    // const Posts = await PostModel.find({ group_id })
+    //   .populate(["group_id", "owner_id"])
+    //   .populate({
+    //     path: "comment",
+    //     populate: {
+    //       path: "owner_id",
+    //       select: ["user_name", "email", "user_img"],
+    //     },
+    //   })
+    //   .sort({ created_at: -1 }) //내림차순 정렬
+    //   .skip((page - 1) * 10) //건너뛸 문서
+    //   .limit(10); //가져울 문서 제한
+
     res.status(200).send({ status: 200, message: "success read", data: Posts });
   } catch (err) {
     res.status(500).send({ status: 500, message: "Failed", err });
