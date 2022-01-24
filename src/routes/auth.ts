@@ -83,10 +83,18 @@ authRouter.post(`/signin`, async (req, res, next) => {
     body: { email, password },
   }: { body: { email: string; password: string } } = req;
   try {
-    let findUser = await UserModel.findOne({ email }).populate({
-      path: "follow",
-      select: ["user_name", "email", "user_img"],
-    });
+    let findUser = await UserModel.findOne({ email })
+      .populate({
+        path: "follow",
+        select: ["user_name", "email", "user_img"],
+      })
+      .populate({
+        path: "group",
+        populate: {
+          path: "owner_id",
+          select: ["user_name", "email", "user_img"],
+        },
+      });
     let { user_name, created_at, _id, user_img, follow, group } = findUser;
     if (findUser === null) {
       return res.status(404).send({ status: 404, message: "user not found" });
@@ -143,10 +151,18 @@ authRouter.post("/verify", async (req: Request, res, next) => {
     if (verifyToken.status) {
       let findUser = await UserModel.findOne({
         email: verifyToken.decoded.email,
-      }).populate({
-        path: "follow",
-        select: ["user_name", "email", "user_img"],
-      });
+      })
+        .populate({
+          path: "follow",
+          select: ["user_name", "email", "user_img"],
+        })
+        .populate({
+          path: "group",
+          populate: {
+            path: "owner_id",
+            select: ["user_name", "email", "user_img"],
+          },
+        });
       let { email, user_name, created_at, _id, user_img, follow, group } =
         findUser;
       return res.status(201).send({

@@ -96,7 +96,9 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
       //     .status(404)
       //     .send({ status: 404, message: "user not found!" });
       // }
-      const findUserFollow = await UserModel.findOne({ email: verifyToken.decoded.email })
+      const findUserFollow = await UserModel.findOne({
+        email: verifyToken.decoded.email,
+      })
         .where("group")
         .in([group_id]);
 
@@ -106,15 +108,49 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
           .send({ status: 400, message: "This user has been group!" });
       }
 
-      await UserModel.findOneAndUpdate(
+      const findUser = await UserModel.findOneAndUpdate(
         { email: verifyToken.decoded.email },
         { $push: { group: group_id } }
+      );
+      
+      await GroupModel.findOneAndUpdate(
+        { _id: group_id },
+        { $push: { group_peoples: findUser._id } }
       );
 
       return res.status(201).send({
         status: 201,
         message: "success join group",
       });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ status: 500, message: "Failed", err });
+      next(err);
+    }
+  } else {
+    return res.status(401).send({
+      status: 401,
+      message: "Unauthorized Token",
+      err: verifyToken.err,
+    });
+  }
+});
+
+groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
+  const {
+    body: { page },
+  }: {
+    body: { page: number };
+  } = req;
+
+  const authToken = req.headers[`authorization`];
+  if (!authToken) {
+    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
+  }
+  const token = authToken.split(` `)[1];
+  const verifyToken: any = jwt.verify(token);
+  if (verifyToken.status) {
+    try {
     } catch (err) {
       console.log(err);
       res.status(500).send({ status: 500, message: "Failed", err });

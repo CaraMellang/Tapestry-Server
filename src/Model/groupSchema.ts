@@ -11,6 +11,7 @@ export default function groupModel() {
     group_description:{type:String, default:""},
     group_img: { type: String, default: "" },
     group_people_count: { type: Number, default: 0 },
+    group_peoples:{type:[Mongoose.Types.ObjectId] , default:[] , ref:"User"},
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },
   });

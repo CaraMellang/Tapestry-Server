@@ -66,7 +66,7 @@ postRouter.post(`/create`, async (req: Request, res, next) => {
   }
 });
 
-postRouter.post(`/read`, async (req: Request, res, next) => {
+postRouter.post(`/readgroup`, async (req: Request, res, next) => {
   const {
     body: { group_id, group_arr, page },
   }: {
@@ -136,5 +136,7 @@ postRouter.get(`/readall`, async (req, res, next) => {
     next(err);
   }
 });
+
+postRouter.post(`/readnew`, async (req: Request, res, next) => {});
 
 export default postRouter;
