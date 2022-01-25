@@ -149,20 +149,23 @@ authRouter.post("/verify", async (req: Request, res, next) => {
   const verifyToken: any = jwt.verify(token);
   try {
     if (verifyToken.status) {
-      let findUser = await UserModel.findOne({
-        email: verifyToken.decoded.email,
-      })
-        .populate({
-          path: "follow",
-          select: ["user_name", "email", "user_img"],
-        })
-        .populate({
-          path: "group",
-          populate: {
-            path: "owner_id",
-            select: ["user_name", "email", "user_img"],
-          },
-        });
+      let findUser = await UserModel.findOne(
+        {
+          email: verifyToken.decoded.email,
+        },
+        ["user_name", "email", "user_img", "created_at"]
+      );
+      // .populate({
+      //   path: "follow",
+      //   select: ["user_name", "email", "user_img"],
+      // })
+      // .populate({
+      //   path: "group",
+      //   populate: {
+      //     path: "owner_id",
+      //     select: ["user_name", "email", "user_img"],
+      //   },
+      // });
       let { email, user_name, created_at, _id, user_img, follow, group } =
         findUser;
       return res.status(201).send({

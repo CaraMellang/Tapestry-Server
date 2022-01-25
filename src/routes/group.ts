@@ -45,7 +45,6 @@ groupRouter.post("/create", async (req: Request, res, next) => {
         group_name,
         group_description,
         group_img,
-        group_people_count: 1,
         created_at: curr,
       });
       const createdGroupData = await Group.save();
@@ -54,6 +53,15 @@ groupRouter.post("/create", async (req: Request, res, next) => {
         message: "success create group",
         data: createdGroupData,
       });
+      const findUser = await UserModel.findOneAndUpdate(
+        { email: verifyToken.decoded.email },
+        { $push: { group: createdGroupData._id } }
+      );
+
+      await GroupModel.findOneAndUpdate(
+        { _id: createdGroupData._id },
+        { $push: { group_peoples: findUser._id } }
+      );
     } catch (err) {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
@@ -112,7 +120,7 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
         { email: verifyToken.decoded.email },
         { $push: { group: group_id } }
       );
-      
+
       await GroupModel.findOneAndUpdate(
         { _id: group_id },
         { $push: { group_peoples: findUser._id } }
@@ -151,6 +159,24 @@ groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
   const verifyToken: any = jwt.verify(token);
   if (verifyToken.status) {
     try {
+      const findUser = await UserModel.findOne(
+        {
+          email: verifyToken.decoded.email,
+        },
+        ["group"]
+      ).populate({
+        path: "group",
+        populate: {
+          path: "owner_id",
+          select: ["user_name", "email", "user_img"],
+        },
+      });
+      if (!findUser) {
+        res.status(404).send({ status: 404, message: "user not found!" });
+      }
+      res
+        .status(201)
+        .send({ status: 201, massage: "group red success", data: findUser });
     } catch (err) {
       console.log(err);
       res.status(500).send({ status: 500, message: "Failed", err });
