@@ -66,18 +66,19 @@ postRouter.post(`/create`, async (req: Request, res, next) => {
   }
 });
 
-postRouter.post(`/readgroup`, async (req: Request, res, next) => {
+postRouter.post(`/readgrouparr`, async (req: Request, res, next) => {
   const {
-    body: { group_id, group_arr, page },
+    body: { group_arr, page },
   }: {
     body: {
-      group_id: string;
       page: number;
       group_arr: string[];
     };
   } = req;
+  console.log(group_arr);
   try {
     const isExistGroupArr = await GroupModel.find({ _id: group_arr });
+    // const isExistGroupArr = await GroupModel.find({ group_arr }); 왜 둘다 되는거임?
     if (!isExistGroupArr) {
       return res
         .status(404)
@@ -123,7 +124,7 @@ postRouter.post(`/readgroup`, async (req: Request, res, next) => {
   }
 });
 
-postRouter.get(`/readall`, async (req, res, next) => {
+postRouter.get(`/groupread`, async (req, res, next) => {
   try {
     const findPosts = await PostModel.find().sort({ created_at: -1 }).limit(5);
     if (!findPosts)
