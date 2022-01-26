@@ -72,10 +72,9 @@ postRouter.post(`/readgrouparr`, async (req: Request, res, next) => {
   }: {
     body: {
       page: number;
-      group_arr: string[];
+      group_arr: [];
     };
   } = req;
-  console.log(group_arr);
   try {
     const isExistGroupArr = await GroupModel.find({ _id: group_arr });
     // const isExistGroupArr = await GroupModel.find({ group_arr }); 왜 둘다 되는거임?
@@ -124,13 +123,36 @@ postRouter.post(`/readgrouparr`, async (req: Request, res, next) => {
   }
 });
 
-postRouter.get(`/groupread`, async (req, res, next) => {
+postRouter.post(`/readgroup`, async (req: Request, res, next) => {
+  const {
+    body: { group_id, page },
+  }: {
+    body: {
+      page: number;
+      group_id: string;
+    };
+  } = req;
   try {
-    const findPosts = await PostModel.find().sort({ created_at: -1 }).limit(5);
-    if (!findPosts)
+    const findPosts = await PostModel.find({ group_id })
+      .populate([
+        "group_id",
+        { path: "owner_id", select: ["user_name", "email", "user_img"] },
+      ])
+      .populate({
+        path: "comment",
+        populate: {
+          path: "owner_id",
+          select: ["user_name", "email", "user_img"],
+        },
+      })
+      .sort({ created_at: -1 }) //내림차순 정렬
+      .skip((page - 1) * 10) //건너뛸 문서
+      .limit(10); //가져울 문서 제한
+    if (!findPosts) {
       return res.status(404).send({ status: 404, message: "post not found" });
+    }
     return res
-      .status(200)
+      .status(201)
       .send({ status: 200, message: "success read", data: findPosts });
   } catch (err) {
     res.status(500).send({ status: 500, message: "Failed", err });
