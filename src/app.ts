@@ -9,7 +9,7 @@ import followRouter from "./routes/follow";
 import commentRouter from "./routes/comment";
 import GooglePassportStrategy from "./lib/passport";
 import passport from "passport";
-// import cookieParser from "cookie-parser"; 
+// import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -42,6 +42,10 @@ app.use(passport.initialize());
 
 GooglePassportStrategy(passport);
 
+console.log("ec2 test");
+app.get("/", (req, res) => {
+  res.send("ec2 테스트용");
+});
 const mongoUrl = "mongodb://localhost:27017/tapestry";
 console.log(mongoUrl);
 Mongoose.connect(mongoUrl)
@@ -51,7 +55,6 @@ Mongoose.connect(mongoUrl)
   .catch((e) => {
     console.log(`Error!`, e);
   });
-
 app.use("/auth", authRouter);
 app.use("/group", groupRouter);
 app.use("/post", postRouter);
