@@ -19,17 +19,30 @@ searchRouter.post(`/`, async (req: Request, res, next) => {
       if (type === "group") {
         const groupData = await GroupModel.find({
           group_name: { $regex: search },
-        });
+        })
+          .sort({ created_at: -1 }) 
+          .skip((page - 1) * 10) 
+          .limit(10); 
         return res.send({ data: groupData });
       }
       if (type === "post") {
-        const postData = await PostModel.find({ text: { $regex: search } });
+        const postData = await PostModel.find({ text: { $regex: search } })
+          .populate([
+            "group_id",
+            { path: "owner_id", select: ["user_name", "email", "user_img"] },
+          ])
+          .sort({ created_at: -1 }) //내림차순 정렬
+          .skip((page - 1) * 10) //건너뛸 문서
+          .limit(10); //가져울 문서 제한
         return res.send({ data: postData });
       }
       if (type === "user") {
         const userData = await UserModel.find({
           user_name: { $regex: search },
-        });
+        })
+          .sort({ created_at: -1 }) 
+          .skip((page - 1) * 10) 
+          .limit(10); 
         return res.send({ data: userData });
       }
       if (!type || type === "") {
