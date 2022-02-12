@@ -123,7 +123,10 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
 
       await GroupModel.findOneAndUpdate(
         { _id: group_id },
-        { $push: { group_peoples: findUser._id } }
+        {
+          $push: { group_peoples: findUser._id },
+          group_people_count: (isExistGroup.group_people_count += 1),
+        }
       );
 
       return res.status(201).send({
@@ -176,7 +179,7 @@ groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
       }
       res
         .status(201)
-        .send({ status: 201, massage: "group red success", data: findUser });
+        .send({ status: 201, massage: "group read success", data: findUser });
     } catch (err) {
       console.log(err);
       res.status(500).send({ status: 500, message: "Failed", err });
@@ -188,6 +191,42 @@ groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
       message: "Unauthorized Token",
       err: verifyToken.err,
     });
+  }
+});
+
+groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
+  const {
+    body: { group_id, user_id },
+  }: { body: { group_id: string; user_id: string } } = req;
+
+  try {
+    const Group = await GroupModel.findOne(
+      { _id: group_id },
+      {
+        _id: 1,
+        group_name: 1,
+        group_description: 1,
+        group_people_count: 1,
+        group_img: 1,
+      }
+    )
+      .populate({
+        path: "owner_id",
+        select: ["user_name", "email", "user_img"],
+      })
+      .populate({
+        path: "group_peoples",
+        select: ["user_name", "email", "user_img"],
+      });
+
+    const isJoinGroup = await GroupModel.findOne({});
+
+    return res
+      .status(201)
+      .send({ status: 201, message: "success read groupDetail", Group });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({ status: 500, message: "Failed", err });
   }
 });
 
