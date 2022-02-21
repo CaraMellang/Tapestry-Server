@@ -147,6 +147,56 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
   }
 });
 
+groupRouter.post(`/leavegroup`, async (req: Request, res, next) => {
+  const {
+    body: { group_id },
+  }: {
+    body: { group_id: string };
+  } = req;
+  const authToken = req.headers[`authorization`];
+  if (!authToken) {
+    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
+  }
+  const token = authToken.split(` `)[1];
+  const verifyToken: any = jwt.verify(token);
+  if (verifyToken.status) {
+    try {
+      const isExistGroup = await GroupModel.findOne({ _id: group_id });
+      if (!isExistGroup) {
+        return res
+          .status(404)
+          .send({ status: 400, message: "this group not found!!" });
+      }
+      const findUser = await UserModel.findOneAndUpdate(
+        { email: verifyToken.decoded.email },
+        { $pull: { group: group_id } }
+      );
+
+      await GroupModel.findOneAndUpdate(
+        { _id: group_id },
+        {
+          $pull: { group_peoples: findUser._id },
+          group_people_count: (isExistGroup.group_people_count -= 1),
+        }
+      );
+      return res.status(201).send({
+        status: 201,
+        message: "success leave group",
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send({ status: 500, message: "Failed", err });
+      next(err);
+    }
+  } else {
+    return res.status(401).send({
+      status: 401,
+      message: "Unauthorized Token",
+      err: verifyToken.err,
+    });
+  }
+});
+
 groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
   const {
     body: { page },

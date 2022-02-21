@@ -14,15 +14,17 @@ searchRouter.post(`/`, async (req: Request, res, next) => {
     const {
       body: { search, page, type },
     }: { body: { search: string; page: number; type: string } } = req;
-
+    console.log(type);
+    console.log(page);
+    console.log(search);
     try {
       if (type === "group") {
         const groupData = await GroupModel.find({
           group_name: { $regex: search },
         })
-          .sort({ created_at: -1 }) 
-          .skip((page - 1) * 10) 
-          .limit(10); 
+          .sort({ created_at: -1 })
+          .skip((page - 1) * 10)
+          .limit(10);
         return res.send({ data: groupData });
       }
       if (type === "post") {
@@ -40,9 +42,9 @@ searchRouter.post(`/`, async (req: Request, res, next) => {
         const userData = await UserModel.find({
           user_name: { $regex: search },
         })
-          .sort({ created_at: -1 }) 
-          .skip((page - 1) * 10) 
-          .limit(10); 
+          .sort({ created_at: -1 })
+          .skip((page - 1) * 10)
+          .limit(10);
         return res.send({ data: userData });
       }
       if (!type || type === "") {
