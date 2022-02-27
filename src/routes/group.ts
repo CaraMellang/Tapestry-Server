@@ -2,6 +2,8 @@ import express, { NextFunction, Request, Response } from "express";
 import { UserModel, GroupModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
+import { uploadImage} from '../lib/multer'
+
 
 const groupRouter = express.Router();
 
@@ -279,5 +281,15 @@ groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
     return res.status(500).send({ status: 500, message: "Failed", err });
   }
 });
+
+groupRouter.post(
+  `/uploadtest`,
+  uploadImage.single("image"),
+  async (req: Request, res, next) => {
+    console.log(req.body);
+    console.log("파일", req.file);
+    return res.status(201).send({ message: "됐나?" });
+  }
+);
 
 export default groupRouter;
