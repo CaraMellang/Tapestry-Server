@@ -2,30 +2,82 @@ import express, { NextFunction, Request, Response } from "express";
 import { UserModel, GroupModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
-import { uploadImage} from '../lib/multer'
-
+import { uploadImage } from "../lib/multer";
+import { FileContent } from "aws-sdk/clients/codecommit";
 
 const groupRouter = express.Router();
 
-groupRouter.post("/create", async (req: Request, res, next) => {
-  const {
-    body: { group_name, group_description, group_img },
-  }: {
-    body: { group_name: string; group_description: string; group_img: string };
-  } = req;
+groupRouter.post(
+  "/create",
+  (req: Request, res, next) => {
+    const authToken = req.headers[`authorization`];
+    if (!authToken) {
+      return res
+        .status(401)
+        .send({ status: 401, message: "Unauthorized Token" });
+    }
+    const token = authToken.split(` `)[1];
+    const verifyToken: any = jwt.verify(token);
+    if (verifyToken.status) {
+      res.locals.user = {
+        email: verifyToken.decoded.email,
+        user_name: verifyToken.decoded.user_name,
+      };
+      next();
+    } else {
+      return res.status(401).send({
+        status: 401,
+        message: "Unauthorized Token",
+        err: verifyToken.err,
+      });
+    }
+  },
+  uploadImage.single("group_img"),
+  async (req: Request, res, next) => {
+    const {
+      body: { group_name, group_description },
+    }: {
+      body: {
+        group_name: string;
+        group_description: string;
+      };
+    } = req;
+    const { email, user_name } = res.locals.user;
+    let imageFile: any = req.file;
+    // imageFile = {
+    //   fieldname: null,
+    //   originalname:null ,
+    //   encoding: null,
+    //   mimetype: null,
+    //   size: null,
+    //   bucket: null,
+    //   key: null,
+    //   acl: null,
+    //   contentType: null,
+    //   contentDisposition: null,
+    //   contentEncoding: null,
+    //   storageClass: null,
+    //   serverSideEncryption: null,
+    //   metadata: null,
+    //   location: null,
+    //   etag: null,
+    //   versionId: undefined
+    // }
 
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken: any = jwt.verify(token);
+    // const authToken = req.headers[`authorization`];
+    // if (!authToken) {
+    //   return res
+    //     .status(401)
+    //     .send({ status: 401, message: "Unauthorized Token" });
+    // }
+    // const token = authToken.split(` `)[1];
+    // const verifyToken: any = jwt.verify(token);
 
-  const date = new Date();
-  const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-  const curr = new Date(utc);
+    const date = new Date();
+    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+    const curr = new Date(utc);
 
-  if (verifyToken.status) {
+    // if (verifyToken.status) {
     try {
       const verifyGroupName = await GroupModel.findOne({ group_name }).exec();
       if (verifyGroupName) {
@@ -34,7 +86,7 @@ groupRouter.post("/create", async (req: Request, res, next) => {
           .send({ status: 400, message: "invailed group name!" });
       }
       const user = await UserModel.findOne({
-        email: verifyToken.decoded.email,
+        email: email,
       });
 
       if (!user)
@@ -46,7 +98,7 @@ groupRouter.post("/create", async (req: Request, res, next) => {
         owner_id: user._id,
         group_name,
         group_description,
-        group_img,
+        group_img: imageFile.location,
         created_at: curr,
       });
       const createdGroupData = await Group.save();
@@ -56,7 +108,7 @@ groupRouter.post("/create", async (req: Request, res, next) => {
         data: createdGroupData,
       });
       const findUser = await UserModel.findOneAndUpdate(
-        { email: verifyToken.decoded.email },
+        { email: email },
         { $push: { group: createdGroupData._id } }
       );
 
@@ -68,14 +120,15 @@ groupRouter.post("/create", async (req: Request, res, next) => {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
+    // } else {
+    //   return res.status(401).send({
+    //     status: 401,
+    //     message: "Unauthorized Token",
+    //     err: verifyToken.err,
+    //   });
+    // }
   }
-});
+);
 
 groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
   const {
@@ -282,14 +335,65 @@ groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
   }
 });
 
-groupRouter.post(
-  `/uploadtest`,
-  uploadImage.single("image"),
-  async (req: Request, res, next) => {
-    console.log(req.body);
-    console.log("파일", req.file);
-    return res.status(201).send({ message: "됐나?" });
-  }
-);
+// groupRouter.post( 삭제예정
+//   `/tteesstt`,
+//   (req: Request, res, next) => {
+//     console.log("윗놈", req.file);
+//     const authToken = req.headers[`authorization`];
+//     if (!authToken) {
+//       return res
+//         .status(401)
+//         .send({ status: 401, message: "Unauthorized Token" });
+//     }
+//     const token = authToken.split(` `)[1];
+//     const verifyToken: any = jwt.verify(token);
+//     if (verifyToken.status) {
+//       console.log(verifyToken);
+//       res.locals.user = {
+//         email: verifyToken.decoded.email,
+//         user_name: verifyToken.decoded.user_name,
+//       };
+//       next();
+//     } else {
+//       return res.status(401).send({
+//         status: 401,
+//         message: "Unauthorized Token",
+//         err: verifyToken.err,
+//       });
+//     }
+//   },
+//   uploadImage.single("group_img"),
+//   async (req: Request, res, next) => {
+//     console.log(req.body);
+//     console.log(req.file);
+//     const authToken = req.headers[`authorization`];
+//     const { email, user_name } = res.locals.user;
+//     console.log("킥킥킥", res.locals.user, email, user_name);
+//     console.log(authToken);
+//     return res.send({ d: "끝" });
+//   }
+// );
+
+// groupRouter.post(
+//   `/uploadtest`,
+//   uploadImage.single("group_img"),
+//   async (req: Request, res, next) => {
+//     const {
+//       body: { group_name, group_description },
+//     }: { body: { group_name: string; group_description: string } } = req;
+//     let file: any = req.file;
+//     console.log("파일", file);
+
+//     const authToken = req.headers[`authorization`];
+//     if (!authToken) {
+//       return res
+//         .status(401)
+//         .send({ status: 401, message: "Unauthorized Token" });
+//     }
+//     console.log("잉잉", group_name, group_description);
+//     console.log(req.body);
+//     return res.status(201).send({ message: "됐나?" });
+//   }
+// );
 
 export default groupRouter;
