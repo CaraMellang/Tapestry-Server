@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "../lib/jwt";
+import { uploadImage } from "../lib/multer";
 import {
   GroupModel,
   ParantCommentModel,
@@ -9,30 +10,50 @@ import {
 
 const postRouter = express.Router();
 
-postRouter.post(`/create`, async (req: Request, res, next) => {
-  const {
-    body: { group_id, email, is_private, text, images },
-  }: {
-    body: {
-      group_id: string;
-      email: string;
-      is_private: boolean;
-      text: string;
-      images: string[];
-    };
-  } = req;
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken = jwt.verify(token);
+postRouter.post(
+  `/create`,
+  (req: Request, res, next) => {
+    const authToken = req.headers[`authorization`];
+    if (!authToken) {
+      return res
+        .status(401)
+        .send({ status: 401, message: "Unauthorized Token" });
+    }
+    const token = authToken.split(` `)[1];
+    const verifyToken: any = jwt.verify(token);
+    if (verifyToken.status) {
+      res.locals.user = {
+        email: verifyToken.decoded.email,
+        user_name: verifyToken.decoded.user_name,
+      };
+      next();
+    } else {
+      return res.status(401).send({
+        status: 401,
+        message: "Unauthorized Token",
+        err: verifyToken.err,
+      });
+    }
+  },
+  uploadImage.array("post_imgs"),
+  async (req: Request, res, next) => {
+    const {
+      body: { group_id, email, is_private, text },
+    }: {
+      body: {
+        group_id: string;
+        email: string;
+        is_private: string;
+        text: string;
+      };
+    } = req;
+    let imageFile: any = req.files;
+    let  imgLocationArr = imageFile.map((item:any)=>item.location)
 
-  const date = new Date();
-  const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-  const curr = new Date(utc);
+    const date = new Date();
+    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+    const curr = new Date(utc);
 
-  if (verifyToken.status) {
     try {
       const isExistGroup = await GroupModel.findOne({ _id: group_id }).exec();
       if (!isExistGroup) {
@@ -46,7 +67,7 @@ postRouter.post(`/create`, async (req: Request, res, next) => {
         owner_id: writer._id,
         is_private,
         text,
-        images,
+        images:imgLocationArr,
         created_at: curr,
       });
       await Post.save();
@@ -57,14 +78,8 @@ postRouter.post(`/create`, async (req: Request, res, next) => {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
   }
-});
+);
 
 postRouter.post(`/readgrouparr`, async (req: Request, res, next) => {
   const {
