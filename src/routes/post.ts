@@ -48,7 +48,7 @@ postRouter.post(
       };
     } = req;
     let imageFile: any = req.files;
-    let  imgLocationArr = imageFile.map((item:any)=>item.location)
+    let imgLocationArr = imageFile.map((item: any) => item.location);
 
     const date = new Date();
     const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
@@ -67,7 +67,7 @@ postRouter.post(
         owner_id: writer._id,
         is_private,
         text,
-        images:imgLocationArr,
+        images: imgLocationArr,
         created_at: curr,
       });
       await Post.save();
@@ -176,5 +176,45 @@ postRouter.post(`/readgroup`, async (req: Request, res, next) => {
 });
 
 postRouter.post(`/readnew`, async (req: Request, res, next) => {});
+
+postRouter.delete(
+  `/delete`,
+  (req: Request, res, next) => {
+    const authToken = req.headers[`authorization`];
+    if (!authToken) {
+      return res
+        .status(401)
+        .send({ status: 401, message: "Unauthorized Token" });
+    }
+    const token = authToken.split(` `)[1];
+    const verifyToken: any = jwt.verify(token);
+    if (verifyToken.status) {
+      res.locals.user = {
+        email: verifyToken.decoded.email,
+        user_name: verifyToken.decoded.user_name,
+      };
+      next();
+    } else {
+      return res.status(401).send({
+        status: 401,
+        message: "Unauthorized Token",
+        err: verifyToken.err,
+      });
+    }
+  },
+  async (req: Request, res, next) => {
+    const {
+      body: { post_id },
+    }: { body: { post_id: string } } = req;
+    try {
+      await PostModel.deleteOne({ _id: post_id });
+      res
+        .status(201)
+        .send({ status: 201, message: "정상적으로 삭제되었습니다." });
+    } catch (err) {
+      res.status(500).send({ status: 500, message: "에러가 발생했습니다." });
+    }
+  }
+);
 
 export default postRouter;

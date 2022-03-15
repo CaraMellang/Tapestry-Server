@@ -6,7 +6,6 @@ import { uploadImage } from "../lib/multer";
 import { FileContent } from "aws-sdk/clients/codecommit";
 
 const groupRouter = express.Router();
-
 groupRouter.post(
   "/create",
   (req: Request, res, next) => {
@@ -63,7 +62,6 @@ groupRouter.post(
     //   etag: null,
     //   versionId: undefined
     // }
-
 
     const date = new Date();
     const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
@@ -318,6 +316,5 @@ groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
     return res.status(500).send({ status: 500, message: "Failed", err });
   }
 });
-
 
 export default groupRouter;
