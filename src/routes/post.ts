@@ -207,8 +207,23 @@ postRouter.delete(
       body: { post_id },
     }: { body: { post_id: string } } = req;
     try {
+      const findUser = await UserModel.findOne({
+        email: res.locals.user.email,
+      });
+      if (!findUser)
+        return res
+          .status(404)
+          .send({ status: 404, message: "사용자를 찾을수 없습니다." });
+
+      const findPost = await PostModel.findOne({ _id: post_id });
+      if(!findPost) return res.status(404).send({status:404, message:"존재하지 않거나 잘못된 게시물 입니다."})
+      if (findPost.owner_id.toString() !== findUser._id.toString())
+        return res.status(999).send({
+          status: 999,
+          message: "사용자와 게시글의 주인번호가 일치하지 않습니다.",
+        });
       await PostModel.deleteOne({ _id: post_id });
-      res
+      return res
         .status(201)
         .send({ status: 201, message: "정상적으로 삭제되었습니다." });
     } catch (err) {
