@@ -10,6 +10,7 @@ import commentRouter from "./routes/comment";
 import GooglePassportStrategy from "./lib/passport";
 import passport from "passport";
 import searchRouter from "./routes/search";
+import profileRouter from "./routes/profile";
 // import cookieParser from "cookie-parser";
 
 const app = express();
@@ -62,6 +63,7 @@ app.use("/post", postRouter);
 app.use("/follow", followRouter);
 app.use("/comment", commentRouter);
 app.use("/search", searchRouter);
+app.use("/profile",profileRouter)
 
 const port = 5000;
 
