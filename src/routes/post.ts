@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "../lib/jwt";
-import { uploadImage } from "../lib/multer";
+import { s3, uploadImage } from "../lib/multer";
 import validTokenMiddleware from "../lib/validTokenMiddleware";
 import {
   GroupModel,
@@ -158,29 +158,7 @@ postRouter.post(`/readnew`, async (req: Request, res, next) => {});
 
 postRouter.delete(
   `/delete`,
-  (req: Request, res, next) => {
-    const authToken = req.headers[`authorization`];
-    if (!authToken) {
-      return res
-        .status(401)
-        .send({ status: 401, message: "Unauthorized Token" });
-    }
-    const token = authToken.split(` `)[1];
-    const verifyToken: any = jwt.verify(token);
-    if (verifyToken.status) {
-      res.locals.user = {
-        email: verifyToken.decoded.email,
-        user_name: verifyToken.decoded.user_name,
-      };
-      next();
-    } else {
-      return res.status(401).send({
-        status: 401,
-        message: "Unauthorized Token",
-        err: verifyToken.err,
-      });
-    }
-  },
+  validTokenMiddleware,
   async (req: Request, res, next) => {
     const {
       body: { post_id },
@@ -195,12 +173,33 @@ postRouter.delete(
           .send({ status: 404, message: "사용자를 찾을수 없습니다." });
 
       const findPost = await PostModel.findOne({ _id: post_id });
-      if(!findPost) return res.status(404).send({status:404, message:"존재하지 않거나 잘못된 게시물 입니다."})
+      if (!findPost)
+        return res.status(404).send({
+          status: 404,
+          message: "존재하지 않거나 잘못된 게시물 입니다.",
+        });
       if (findPost.owner_id.toString() !== findUser._id.toString())
         return res.status(999).send({
           status: 999,
           message: "사용자와 게시글의 주인번호가 일치하지 않습니다.",
         });
+      findPost.images.forEach((item: string) => {
+        s3.deleteObject(
+          {
+            Bucket: "tapestry-image-bucket/tapestry/images",
+            Key: item.split(`tapestry-image-bucket/tapestry/images/`)[1],
+          },
+          function (err, data) {
+            if (err) {
+              console.log("aws video delete error");
+              console.log(err, err.stack);
+              return res.status(500).send({status:500,message:"이미지 삭제에 실패했습니다."})
+            } else {
+              console.log("aws video delete success" + data);
+            }
+          }
+        );
+      });
       await PostModel.deleteOne({ _id: post_id });
       return res
         .status(201)
