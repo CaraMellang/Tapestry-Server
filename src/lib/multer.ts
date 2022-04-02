@@ -5,7 +5,7 @@ import { v4 } from "uuid";
 import dotenv from "dotenv";
 dotenv.config();
 
-const s3 = new aws.S3({
+export const s3 = new aws.S3({
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY ? process.env.S3_ACCESS_KEY : "",
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY

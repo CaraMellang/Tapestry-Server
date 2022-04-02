@@ -9,29 +9,7 @@ import validTokenMiddleware from "../lib/validTokenMiddleware";
 const groupRouter = express.Router();
 groupRouter.post(
   "/create",
-  (req: Request, res, next) => {
-    const authToken = req.headers[`authorization`];
-    if (!authToken) {
-      return res
-        .status(401)
-        .send({ status: 401, message: "Unauthorized Token" });
-    }
-    const token = authToken.split(` `)[1];
-    const verifyToken: any = jwt.verify(token);
-    if (verifyToken.status) {
-      res.locals.user = {
-        email: verifyToken.decoded.email,
-        user_name: verifyToken.decoded.user_name,
-      };
-      next();
-    } else {
-      return res.status(401).send({
-        status: 401,
-        message: "Unauthorized Token",
-        err: verifyToken.err,
-      });
-    }
-  },
+  validTokenMiddleware,
   uploadImage.single("group_img"),
   async (req: Request, res, next) => {
     const {
@@ -113,20 +91,13 @@ groupRouter.post(
   }
 );
 
-groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
+groupRouter.post(`/joingroup`, validTokenMiddleware,async (req: Request, res, next) => {
   const {
     body: { group_id },
   }: {
     body: { group_id: string };
   } = req;
 
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken: any = jwt.verify(token);
-  if (verifyToken.status) {
     try {
       const isExistGroup = await GroupModel.findOne({ _id: group_id });
       if (!isExistGroup) {
@@ -143,7 +114,7 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
       //     .send({ status: 404, message: "user not found!" });
       // }
       const findUserFollow = await UserModel.findOne({
-        email: verifyToken.decoded.email,
+        email: res.locals.user.email,
       })
         .where("group")
         .in([group_id]);
@@ -155,7 +126,7 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
       }
 
       const findUser = await UserModel.findOneAndUpdate(
-        { email: verifyToken.decoded.email },
+        { email: res.locals.user.email },
         { $push: { group: group_id } }
       );
 
@@ -176,28 +147,21 @@ groupRouter.post(`/joingroup`, async (req: Request, res, next) => {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
-  }
 });
 
-groupRouter.post(`/leavegroup`, async (req: Request, res, next) => {
+groupRouter.post(`/leavegroup`, validTokenMiddleware,async (req: Request, res, next) => {
   const {
     body: { group_id },
   }: {
     body: { group_id: string };
   } = req;
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken: any = jwt.verify(token);
-  if (verifyToken.status) {
+  // const authToken = req.headers[`authorization`];
+  // if (!authToken) {
+  //   return res.status(401).send({ status: 401, message: "Unauthorized Token" });
+  // }
+  // const token = authToken.split(` `)[1];
+  // const verifyToken: any = jwt.verify(token);
+  // if (verifyToken.status) {
     try {
       const isExistGroup = await GroupModel.findOne({ _id: group_id });
       if (!isExistGroup) {
@@ -206,7 +170,7 @@ groupRouter.post(`/leavegroup`, async (req: Request, res, next) => {
           .send({ status: 400, message: "this group not found!!" });
       }
       const findUser = await UserModel.findOneAndUpdate(
-        { email: verifyToken.decoded.email },
+        { email: res.locals.user.email },
         { $pull: { group: group_id } }
       );
 
@@ -226,13 +190,13 @@ groupRouter.post(`/leavegroup`, async (req: Request, res, next) => {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
-  }
+  // } else {
+  //   return res.status(401).send({
+  //     status: 401,
+  //     message: "Unauthorized Token",
+  //     err: verifyToken.err,
+  //   });
+  // }
 });
 
 groupRouter.post(
