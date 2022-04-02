@@ -1,34 +1,19 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "../lib/jwt";
+import validTokenMiddleware from "../lib/validTokenMiddleware";
 import { UserModel } from "../Model/RootModel";
 
 const profileRouter = express.Router();
 
+profileRouter.post("/test", (req: Request, res: Response, next) => {
+  const dddd = req.headers;
+  if (!dddd["cookie"]) return res.status(404).send({ msg: "실패라는데?" });
+  console.log("너니?", dddd["cookie"].split("=")[1]);
+});
+
 profileRouter.patch(
   `/setname`,
-  (req: Request, res, next) => {
-    const authToken = req.headers[`authorization`];
-    if (!authToken) {
-      return res
-        .status(401)
-        .send({ status: 401, message: "Unauthorized Token" });
-    }
-    const token = authToken.split(` `)[1];
-    const verifyToken: any = jwt.verify(token);
-    if (verifyToken.status) {
-      res.locals.user = {
-        email: verifyToken.decoded.email,
-        user_name: verifyToken.decoded.user_name,
-      };
-      next();
-    } else {
-      return res.status(401).send({
-        status: 401,
-        message: "Unauthorized Token",
-        err: verifyToken.err,
-      });
-    }
-  },
+  validTokenMiddleware,
   async (req: Request, res, next) => {
     const { update_user_name }: { update_user_name: string } = req.body;
     if (update_user_name === "" || !update_user_name) {

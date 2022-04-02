@@ -11,15 +11,17 @@ import GooglePassportStrategy from "./lib/passport";
 import passport from "passport";
 import searchRouter from "./routes/search";
 import profileRouter from "./routes/profile";
-// import cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 
 const app = express();
+
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+// app.use(cookieParser());
 
 //Express 4.x버전부터 body-parser모듈 내장
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use(cookieParser());
-app.use(cors());
 // app.use(
 //   session({
 //     name:"session",
@@ -63,7 +65,7 @@ app.use("/post", postRouter);
 app.use("/follow", followRouter);
 app.use("/comment", commentRouter);
 app.use("/search", searchRouter);
-app.use("/profile",profileRouter)
+app.use("/profile", profileRouter);
 
 const port = 5000;
 

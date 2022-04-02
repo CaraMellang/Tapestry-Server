@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
 import { uploadImage } from "../lib/multer";
 import { FileContent } from "aws-sdk/clients/codecommit";
+import validTokenMiddleware from "../lib/validTokenMiddleware";
 
 const groupRouter = express.Router();
 groupRouter.post(
@@ -234,24 +235,20 @@ groupRouter.post(`/leavegroup`, async (req: Request, res, next) => {
   }
 });
 
-groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
-  const {
-    body: { page },
-  }: {
-    body: { page: number };
-  } = req;
+groupRouter.post(
+  `/readgroup`,
+  validTokenMiddleware,
+  async (req: Request, res, next) => {
+    const {
+      body: { page },
+    }: {
+      body: { page: number };
+    } = req;
 
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken: any = jwt.verify(token);
-  if (verifyToken.status) {
     try {
       const findUser = await UserModel.findOne(
         {
-          email: verifyToken.decoded.email,
+          email: res.locals.user.email,
         },
         ["group"]
       ).populate({
@@ -272,14 +269,8 @@ groupRouter.post(`/readgroup`, async (req: Request, res, next) => {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
   }
-});
+);
 
 groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
   const {

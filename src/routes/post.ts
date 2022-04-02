@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "../lib/jwt";
 import { uploadImage } from "../lib/multer";
+import validTokenMiddleware from "../lib/validTokenMiddleware";
 import {
   GroupModel,
   ParantCommentModel,
@@ -12,29 +13,7 @@ const postRouter = express.Router();
 
 postRouter.post(
   `/create`,
-  (req: Request, res, next) => {
-    const authToken = req.headers[`authorization`];
-    if (!authToken) {
-      return res
-        .status(401)
-        .send({ status: 401, message: "Unauthorized Token" });
-    }
-    const token = authToken.split(` `)[1];
-    const verifyToken: any = jwt.verify(token);
-    if (verifyToken.status) {
-      res.locals.user = {
-        email: verifyToken.decoded.email,
-        user_name: verifyToken.decoded.user_name,
-      };
-      next();
-    } else {
-      return res.status(401).send({
-        status: 401,
-        message: "Unauthorized Token",
-        err: verifyToken.err,
-      });
-    }
-  },
+  validTokenMiddleware,
   uploadImage.array("post_imgs"),
   async (req: Request, res, next) => {
     const {

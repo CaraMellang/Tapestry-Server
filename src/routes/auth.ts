@@ -142,6 +142,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
 
 authRouter.post("/verify", async (req: Request, res, next) => {
   const authToken = req.headers[`authorization`];
+  console.log("안녕하세요",req.headers)
   if (!authToken) {
     return res.status(401).send({ status: 401, message: "Unauthorized Token" });
   }
@@ -193,6 +194,13 @@ authRouter.post("/verify", async (req: Request, res, next) => {
     console.log(err);
     res.status(400).send({ status: 400, message: "err" });
   }
+});
+
+authRouter.post(`/test`, (req, res, net) => {
+  const authToken = req.headers[`cookie`]?.split("=")[1];
+
+  console.log("토", authToken);
+  return res.send({ msg: "퉤" });
 });
 
 export default authRouter;
