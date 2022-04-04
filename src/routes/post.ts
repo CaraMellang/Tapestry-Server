@@ -183,23 +183,23 @@ postRouter.delete(
           status: 999,
           message: "사용자와 게시글의 주인번호가 일치하지 않습니다.",
         });
-      findPost.images.forEach((item: string) => {
-        s3.deleteObject(
-          {
-            Bucket: "tapestry-image-bucket/tapestry/images",
-            Key: item.split(`tapestry-image-bucket/tapestry/images/`)[1],
-          },
-          function (err, data) {
-            if (err) {
-              console.log("aws video delete error");
-              console.log(err, err.stack);
-              return res.status(500).send({status:500,message:"이미지 삭제에 실패했습니다."})
-            } else {
-              console.log("aws video delete success" + data);
-            }
-          }
-        );
-      });
+
+      if (findPost.images !== 0) {
+        await s3
+          .deleteObjects({
+            Bucket: "tapestry-image-bucket",
+            Delete: {
+              Objects: findPost.images.map((item: string) => {
+                return {
+                  Key: `tapestry/images/${decodeURIComponent(
+                    item.split(`tapestry/images/`)[1]
+                  )}`,
+                };
+              }),
+            },
+          })
+          .promise();
+      }
       await PostModel.deleteOne({ _id: post_id });
       return res
         .status(201)
