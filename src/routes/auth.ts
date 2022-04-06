@@ -110,7 +110,6 @@ authRouter.post(`/signin`, async (req, res, next) => {
       }
       const accessToken = jwt.sign({
         email,
-        user_name,
         // created_at,
         // user_img,
         // follow,
@@ -141,12 +140,12 @@ authRouter.post(`/signin`, async (req, res, next) => {
 });
 
 authRouter.post("/verify", async (req: Request, res, next) => {
-  const authToken = req.headers[`authorization`];
+  const authToken = req.headers[`cookie`];
   console.log("안녕하세요",req.headers)
   if (!authToken) {
     return res.status(401).send({ status: 401, message: "Unauthorized Token" });
   }
-  const token = authToken.split(` `)[1];
+  const token = authToken.split(`=`)[1];
   const verifyToken: any = jwt.verify(token);
   try {
     if (verifyToken.status) {
