@@ -19,7 +19,6 @@ export default function validTokenMiddleware(
   if (verifyToken.status) {
     res.locals.user = {
       email: verifyToken.decoded.email,
-      user_name: verifyToken.decoded.user_name,
     };
     console.log(res.locals.user);
     next();
