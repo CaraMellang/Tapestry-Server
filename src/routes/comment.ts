@@ -1,14 +1,13 @@
 import express, { Request } from "express";
 import jwt from "../lib/jwt";
 import { ParantCommentModel, PostModel, UserModel } from "../Model/RootModel";
+import ChildCommentRouter from "./comment/ChildComment";
 import ParantCommentRouter from "./comment/ParantComment";
 
 const commentRouter = express.Router();
 
 commentRouter.use(`/parant`, ParantCommentRouter);
-commentRouter.use(`/child`, (req, res, next) => {
-  res.send({ dd: "방가룽" });
-});
+commentRouter.use(`/child`, ChildCommentRouter);
 
 // commentRouter.post(`/read`, async (req: Request, res, next) => {
 //   const {
