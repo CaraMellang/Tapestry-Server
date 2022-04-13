@@ -17,11 +17,17 @@ ParantCommentRouter.post(`/read`, async (req: Request, res, next) => {
       return res
         .status(404)
         .send({ status: 404, message: "게시글이 존재하지않음." });
-    
-    const findPostComment = await ParantCommentModel.find({post_id}).populate({ path: "owner_id", select: ["_id","email","user_name","user_img"] });
 
-    return res.status(201).send({status:201,message:"성공", data:findPostComment})
+    const findPostComment = await ParantCommentModel.find({ post_id }).populate(
+      [
+        { path: "owner_id", select: ["_id", "email", "user_name", "user_img"] },
+        "child_comment",
+      ]
+    );
 
+    return res
+      .status(201)
+      .send({ status: 201, message: "성공", data: findPostComment });
   } catch (err) {
     res.status(500).send({ status: 500, message: "Failed", err });
     next(err);

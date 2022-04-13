@@ -188,8 +188,8 @@ groupRouter.post(
           group_people_count: (isExistGroup.group_people_count -= 1),
         }
       );
-      return res.status(201).send({
-        status: 201,
+      return res.status(200).send({
+        status: 200,
         message: "success leave group",
       });
     } catch (err) {
@@ -279,5 +279,9 @@ groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
     return res.status(500).send({ status: 500, message: "Failed", err });
   }
 });
+
+groupRouter.delete(`/deletegroup` , validTokenMiddleware , async(req:Request,res:Response,next)=>{
+  
+})
 
 export default groupRouter;
