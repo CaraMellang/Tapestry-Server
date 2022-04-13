@@ -21,8 +21,8 @@ ChildCommentRouter.get("/read", async (req: Request, res: Response, next) => {
         .status(404)
         .send({ status: 404, message: "not found childcommnet" });
 
-    return res.status(201).send({
-      status: 201,
+    return res.status(200).send({
+      status: 200,
       message: "success res childcomment",
       data: findChild,
     });
@@ -76,8 +76,8 @@ ChildCommentRouter.post(
         { $push: { child_comment: ChildComment._id } }
       );
       return res
-        .status(200)
-        .send({ status: 200, message: "success childComment save" });
+        .status(201)
+        .send({ status: 201, message: "success create childComment " });
     } catch (err) {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);

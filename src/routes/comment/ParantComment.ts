@@ -10,11 +10,22 @@ import {
 const ParantCommentRouter = express.Router();
 
 ParantCommentRouter.post(`/read`, async (req: Request, res, next) => {
-  const {
-    body: { post_id },
-  }: {
-    body: { post_id: string };
-  } = req;
+  const { post_id }: { post_id: string } = req.body;
+  try {
+    const findPost = await PostModel.findOne({ _id: post_id });
+    if (!findPost)
+      return res
+        .status(404)
+        .send({ status: 404, message: "게시글이 존재하지않음." });
+    
+    const findPostComment = await ParantCommentModel.find({post_id}).populate({ path: "owner_id", select: ["_id","email","user_name","user_img"] });
+
+    return res.status(201).send({status:201,message:"성공", data:findPostComment})
+
+  } catch (err) {
+    res.status(500).send({ status: 500, message: "Failed", err });
+    next(err);
+  }
 });
 
 ParantCommentRouter.post(
@@ -48,8 +59,8 @@ ParantCommentRouter.post(
         { $push: { comment: ParantComment._id } }
       );
       return res
-        .status(200)
-        .send({ status: 200, message: "success parantComment save" });
+        .status(201)
+        .send({ status: 201, message: "success parantComment save" });
     } catch (err) {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);

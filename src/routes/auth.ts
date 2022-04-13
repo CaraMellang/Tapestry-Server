@@ -49,8 +49,12 @@ authRouter.get(
 
 authRouter.post(`/signup`, async (req, res, next) => {
   const {
-    body: { email, password, username },
-  } = req;
+    email,
+    password,
+    username,
+    userImg,
+  }: { email: string; password: string; username: string; userImg: string } =
+    req.body;
 
   const date = new Date();
   const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
@@ -66,14 +70,13 @@ authRouter.post(`/signup`, async (req, res, next) => {
   try {
     let findUser = await UserModel.findOne({ email }).exec();
     if (findUser !== null) {
-      res.status(400).send({ status: 400, message: "invailed email!" });
-      throw Error("이미있습니다!");
+      return res.status(400).send({ status: 400, message: "invailed email!" });
     }
     await User.save();
     console.log("성공?");
-    res.status(200).send({ status: 200, message: `signup Success` });
+    return res.status(201).send({ status: 201, message: `signup Success` });
   } catch (err) {
-    res.status(500).send({ status: 500, message: "Failed", err });
+    return res.status(500).send({ status: 500, message: "Failed", err });
     next(err);
   }
 });
@@ -118,8 +121,8 @@ authRouter.post(`/signin`, async (req, res, next) => {
       //   httpOnly: true,
       //   maxAge: 60 * 60 * 1000,
       // })
-      return res.status(201).send({
-        status: 201,
+      return res.status(200).send({
+        status: 200,
         message: "signin Success",
         data: {
           userId: _id,
@@ -141,7 +144,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
 
 authRouter.post("/verify", async (req: Request, res, next) => {
   const authToken = req.headers[`cookie`];
-  console.log("안녕하세요",req.headers)
+  console.log("안녕하세요", req.headers);
   if (!authToken) {
     return res.status(401).send({ status: 401, message: "Unauthorized Token" });
   }

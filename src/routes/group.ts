@@ -66,7 +66,7 @@ groupRouter.post(
         owner_id: user._id,
         group_name,
         group_description,
-        group_img: imageFile.location,
+        group_img: imageFile?.location ? imageFile.location : null,
         created_at: curr,
       });
       const createdGroupData = await Group.save();
@@ -91,12 +91,15 @@ groupRouter.post(
   }
 );
 
-groupRouter.post(`/joingroup`, validTokenMiddleware,async (req: Request, res, next) => {
-  const {
-    body: { group_id },
-  }: {
-    body: { group_id: string };
-  } = req;
+groupRouter.post(
+  `/joingroup`,
+  validTokenMiddleware,
+  async (req: Request, res, next) => {
+    const {
+      body: { group_id },
+    }: {
+      body: { group_id: string };
+    } = req;
 
     try {
       const isExistGroup = await GroupModel.findOne({ _id: group_id });
@@ -138,8 +141,8 @@ groupRouter.post(`/joingroup`, validTokenMiddleware,async (req: Request, res, ne
         }
       );
 
-      return res.status(201).send({
-        status: 201,
+      return res.status(200).send({
+        status: 200,
         message: "success join group",
       });
     } catch (err) {
@@ -147,21 +150,25 @@ groupRouter.post(`/joingroup`, validTokenMiddleware,async (req: Request, res, ne
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-});
+  }
+);
 
-groupRouter.post(`/leavegroup`, validTokenMiddleware,async (req: Request, res, next) => {
-  const {
-    body: { group_id },
-  }: {
-    body: { group_id: string };
-  } = req;
-  // const authToken = req.headers[`authorization`];
-  // if (!authToken) {
-  //   return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  // }
-  // const token = authToken.split(` `)[1];
-  // const verifyToken: any = jwt.verify(token);
-  // if (verifyToken.status) {
+groupRouter.post(
+  `/leavegroup`,
+  validTokenMiddleware,
+  async (req: Request, res, next) => {
+    const {
+      body: { group_id },
+    }: {
+      body: { group_id: string };
+    } = req;
+    // const authToken = req.headers[`authorization`];
+    // if (!authToken) {
+    //   return res.status(401).send({ status: 401, message: "Unauthorized Token" });
+    // }
+    // const token = authToken.split(` `)[1];
+    // const verifyToken: any = jwt.verify(token);
+    // if (verifyToken.status) {
     try {
       const isExistGroup = await GroupModel.findOne({ _id: group_id });
       if (!isExistGroup) {
@@ -190,14 +197,15 @@ groupRouter.post(`/leavegroup`, validTokenMiddleware,async (req: Request, res, n
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  // } else {
-  //   return res.status(401).send({
-  //     status: 401,
-  //     message: "Unauthorized Token",
-  //     err: verifyToken.err,
-  //   });
-  // }
-});
+    // } else {
+    //   return res.status(401).send({
+    //     status: 401,
+    //     message: "Unauthorized Token",
+    //     err: verifyToken.err,
+    //   });
+    // }
+  }
+);
 
 groupRouter.post(
   `/readgroup`,
