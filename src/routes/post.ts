@@ -3,6 +3,7 @@ import jwt from "../lib/jwt";
 import { s3, uploadImage } from "../lib/multer";
 import validTokenMiddleware from "../lib/validTokenMiddleware";
 import {
+  ChildCommentModel,
   GroupModel,
   ParantCommentModel,
   PostModel,
@@ -57,6 +58,31 @@ postRouter.post(
     } catch (err) {
       res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
+    }
+  }
+);
+
+postRouter.get(
+  `/getpost`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const { group_id, post_id } = req.query;
+    try {
+      const findPost = await PostModel.findOne({
+        _id: post_id,
+        group_id,
+      }).populate([
+        "group_id",
+        { path: "owner_id", select: ["user_name", "email", "user_img"] },
+      ]);
+      if (!findPost)
+        return res
+          .status(404)
+          .send({ status: 404, message: "게시글을 찾을 수 없습니다." });
+
+      return res.status(200).send({ status: 200, data: findPost });
+    } catch (err) {
+      return res.status(500).send({ status: 500, message: "Failed", err });
     }
   }
 );
@@ -160,10 +186,8 @@ postRouter.post(`/readnew`, async (req: Request, res, next) => {});
 postRouter.delete(
   `/delete`,
   validTokenMiddleware,
-  async (req: Request, res, next) => {
-    const {
-      body: { post_id },
-    }: { body: { post_id: string } } = req;
+  async (req: Request, res: Response, next) => {
+    const { post_id }: { post_id: string } = req.body;
     try {
       const findUser = await UserModel.findOne({
         email: res.locals.user.email,
@@ -185,7 +209,7 @@ postRouter.delete(
           message: "사용자와 게시글의 주인번호가 일치하지 않습니다.",
         });
 
-      if (findPost.images !== 0) {
+      if (findPost.images.length !== 0) {
         await s3
           .deleteObjects({
             Bucket: "tapestry-image-bucket",
@@ -202,15 +226,20 @@ postRouter.delete(
           .promise();
       }
       await PostModel.deleteOne({ _id: post_id });
+      await ParantCommentModel.deleteMany({ post_id });
+      await ChildCommentModel.deleteMany({ post_id });
       return res
         .status(201)
         .send({ status: 201, message: "정상적으로 삭제되었습니다." });
     } catch (err) {
-      res.status(500).send({ status: 500, message: "에러가 발생했습니다." });
+      console.log(err);
+      return res
+        .status(500)
+        .send({ status: 500, message: "에러가 발생했습니다." });
     }
   }
 );
 
-postRouter.use(`/like`,likeRouter)
+postRouter.use(`/like`, likeRouter);
 
 export default postRouter;
