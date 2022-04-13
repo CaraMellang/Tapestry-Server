@@ -18,6 +18,7 @@ export default function postModel() {
     images: { type: Array, default: [] },
     views: { type: Number, default: 0 },
     like_count: { type: Number, default: 0 },
+    like_user: { type: Array, default: [] },
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },
   });

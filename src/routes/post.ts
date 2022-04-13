@@ -8,6 +8,7 @@ import {
   PostModel,
   UserModel,
 } from "../Model/RootModel";
+import likeRouter from "./like";
 
 const postRouter = express.Router();
 
@@ -209,5 +210,7 @@ postRouter.delete(
     }
   }
 );
+
+postRouter.use(`/like`,likeRouter)
 
 export default postRouter;
