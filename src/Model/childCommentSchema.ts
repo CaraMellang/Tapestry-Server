@@ -3,17 +3,17 @@ import Mongoose from "mongoose";
 export default function childCommentModel() {
   const childCommentSchema = new Mongoose.Schema({
     post_id: {
-      type: String,
+      type: Mongoose.Types.ObjectId,
       required: true,
       ref: "Post",
     },
     parant_comment_id: {
-      type: String,
+      type: Mongoose.Types.ObjectId,
       required: true,
       ref: "ParantComment",
     },
     owner_id: {
-      type: String,
+      type: Mongoose.Types.ObjectId,
       required: true,
       ref: "User",
     },

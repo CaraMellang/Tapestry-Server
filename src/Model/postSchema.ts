@@ -14,11 +14,11 @@ export default function postModel() {
     },
     is_private: { type: Boolean, default: false },
     text: { type: String, default: "" },
-    comment: { type: Array, default: [], ref: "ParantComment" },
+    comment: { type: [Mongoose.Types.ObjectId], default: [], ref: "ParantComment" },
     images: { type: Array, default: [] },
     views: { type: Number, default: 0 },
     like_count: { type: Number, default: 0 },
-    like_user: { type: Array, default: [] },
+    like_user: { type: [Mongoose.Types.ObjectId], default: [] ,ref:"User"},
     created_at: { type: Date, default: null },
     updated_at: { type: Date, default: null },
   });
