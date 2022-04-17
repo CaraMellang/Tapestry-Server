@@ -2,6 +2,7 @@ import express, { Request } from "express";
 import jwt from "../../lib/jwt";
 import validTokenMiddleware from "../../lib/validTokenMiddleware";
 import {
+  ChildCommentModel,
   ParantCommentModel,
   PostModel,
   UserModel,
@@ -21,7 +22,13 @@ ParantCommentRouter.post(`/read`, async (req: Request, res, next) => {
     const findPostComment = await ParantCommentModel.find({ post_id }).populate(
       [
         { path: "owner_id", select: ["_id", "email", "user_name", "user_img"] },
-        "child_comment",
+        {
+          path: "child_comment",
+          populate: {
+            path: "owner_id",
+            select: ["_id", "email", "user_name", "user_img"],
+          },
+        },
       ]
     );
 
@@ -78,41 +85,25 @@ ParantCommentRouter.delete(
   `/delete`,
   validTokenMiddleware,
   async (req: Request, res, next) => {
-    const {
-      body: { comment_id, user_id },
-    }: {
-      body: { comment_id: string; user_id: string };
-    } = req;
-    // const authToken = req.headers[`authorization`];
-    // if (!authToken) {
-    //   return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-    // }
-    // const token = authToken.split(` `)[1];
-    // const verifyToken = jwt.verify(token);
-
-    // if (verifyToken.status) {
+    const { comment_id, user_id }: { comment_id: string; user_id: string } =
+      req.body;
     try {
-      const findComment = await ParantCommentModel.findOne({ _id: comment_id });
-      if (!findComment)
+      const findParantComment = await ParantCommentModel.findOne({
+        _id: comment_id,
+      });
+      if (!findParantComment)
         return res
           .status(404)
           .send({ status: 404, message: "comment not found" });
       await ParantCommentModel.deleteOne({ _id: comment_id });
+      await ChildCommentModel.deleteMany({ parant_comment_id: comment_id });
 
       return res
         .status(200)
         .send({ status: 200, message: "success delete comment" });
     } catch (err) {
-      res.status(500).send({ status: 500, message: "Failed", err });
-      next(err);
+      return res.status(500).send({ status: 500, message: "Failed", err });
     }
-    // } else {
-    //   return res.status(401).send({
-    //     status: 401,
-    //     message: "Unauthorized Token",
-    //     err: verifyToken.err,
-    //   });
-    // }
   }
 );
 

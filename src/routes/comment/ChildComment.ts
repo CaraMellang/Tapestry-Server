@@ -11,7 +11,7 @@ import {
 const ChildCommentRouter = express.Router();
 
 ChildCommentRouter.get("/read", async (req: Request, res: Response, next) => {
-  const { parant_comment_id } = req.query;
+  const { parant_comment_id }  = req.query;
   try {
     const findChild = await ChildCommentModel.find({
       parant_comment_id,

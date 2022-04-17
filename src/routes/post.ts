@@ -71,10 +71,28 @@ postRouter.get(
       const findPost = await PostModel.findOne({
         _id: post_id,
         group_id,
-      }).populate([
-        "group_id",
-        { path: "owner_id", select: ["user_name", "email", "user_img"] },
-      ]);
+      })
+        .populate([
+          "group_id",
+          { path: "owner_id", select: ["user_name", "email", "user_img"] },
+        ])
+        .populate({
+          path: "comment",
+          populate: [
+            {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+            {
+              path: "child_comment",
+              populate: {
+                path: "owner_id",
+                select: ["user_name", "email", "user_img"],
+              },
+            },
+          ],
+        });
+
       if (!findPost)
         return res
           .status(404)
@@ -111,10 +129,19 @@ postRouter.post(`/readgrouparr`, async (req: Request, res, next) => {
       ])
       .populate({
         path: "comment",
-        populate: {
-          path: "owner_id",
-          select: ["user_name", "email", "user_img"],
-        },
+        populate: [
+          {
+            path: "owner_id",
+            select: ["user_name", "email", "user_img"],
+          },
+          {
+            path: "child_comment",
+            populate: {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+          },
+        ],
       })
       .sort({ created_at: -1 }) //내림차순 정렬
       .skip((page - 1) * 10) //건너뛸 문서
@@ -161,10 +188,19 @@ postRouter.post(`/readgroup`, async (req: Request, res, next) => {
       ])
       .populate({
         path: "comment",
-        populate: {
-          path: "owner_id",
-          select: ["user_name", "email", "user_img"],
-        },
+        populate: [
+          {
+            path: "owner_id",
+            select: ["user_name", "email", "user_img"],
+          },
+          {
+            path: "child_comment",
+            populate: {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+          },
+        ],
       })
       .sort({ created_at: -1 }) //내림차순 정렬
       .skip((page - 1) * 10) //건너뛸 문서
