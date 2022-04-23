@@ -1,32 +1,34 @@
 import express, { NextFunction, Request, Response } from "express";
 import jwt from "../lib/jwt";
+import validTokenMiddleware from "../lib/validTokenMiddleware";
 import { UserModel } from "../Model/RootModel";
 
 const followRouter = express.Router();
 
-followRouter.post(`/follwing`, async (req: Request, res, next) => {
-  const {
-    body: { user_id, following_user_id },
-  }: {
-    body: { user_id: string; following_user_id: string };
-  } = req;
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken = jwt.verify(token);
+followRouter.patch(
+  `/following`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const {
+      user_id,
+      following_user_id,
+    }: { user_id: string; following_user_id: string } = req.body;
 
-  if (verifyToken.status) {
+    if (user_id === following_user_id)
+      return res
+        .status(403)
+        .send({ status: 403, message: "잘못된 접근입니다." });
+
     try {
-      const findUser = await UserModel.findOne({
+      const findFollowingUser = await UserModel.findOne({
         _id: following_user_id,
-      }).catch((err) => {
+      });
+      if (!findFollowingUser)
         return res.status(404).send({
           status: 404,
           message: "The user has been deleted or does not exist.",
         });
-      });
+
       // 나중에 두 쿼리를 합칠 필요가있음.
 
       const findUserFollow = await UserModel.findOne({ _id: user_id })
@@ -39,7 +41,7 @@ followRouter.post(`/follwing`, async (req: Request, res, next) => {
           .send({ status: 400, message: "This user has been follow!" });
       }
 
-      await UserModel.findOneAndUpdate(
+      await UserModel.updateOne(
         { _id: user_id },
         { $push: { follow: following_user_id } }
       );
@@ -50,32 +52,26 @@ followRouter.post(`/follwing`, async (req: Request, res, next) => {
         message: "success follow",
       });
     } catch (err) {
-      res.status(500).send({ status: 500, message: "Failed", err });
+      return res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
   }
-});
+);
 
-followRouter.post(`/unfollwing`, async (req: Request, res, next) => {
-  const {
-    body: { user_id, following_user_id },
-  }: {
-    body: { user_id: string; following_user_id: string };
-  } = req;
-  const authToken = req.headers[`authorization`];
-  if (!authToken) {
-    return res.status(401).send({ status: 401, message: "Unauthorized Token" });
-  }
-  const token = authToken.split(` `)[1];
-  const verifyToken = jwt.verify(token);
+followRouter.patch(
+  `/unfollowing`,
+  validTokenMiddleware,
+  async (req: Request, res, next) => {
+    const {
+      user_id,
+      following_user_id,
+    }: { user_id: string; following_user_id: string } = req.body;
 
-  if (verifyToken.status) {
+    if (user_id === following_user_id)
+      return res
+        .status(403)
+        .send({ status: 403, message: "잘못된 접근입니다." });
+
     try {
       const findUserFollow = await UserModel.findOne({ _id: user_id })
         .where("follow")
@@ -87,24 +83,17 @@ followRouter.post(`/unfollwing`, async (req: Request, res, next) => {
           .send({ status: 404, message: "Can not see follow user!" });
       }
 
-      const dd = await UserModel.updateOne(
+      await UserModel.updateOne(
         { _id: user_id },
         { $pull: { follow: following_user_id } }
       );
-      console.log(dd);
 
       return res.status(200).send({ status: 200, message: "unfollow success" });
     } catch (err) {
-      res.status(500).send({ status: 500, message: "Failed", err });
+      return res.status(500).send({ status: 500, message: "Failed", err });
       next(err);
     }
-  } else {
-    return res.status(401).send({
-      status: 401,
-      message: "Unauthorized Token",
-      err: verifyToken.err,
-    });
   }
-});
+);
 
 export default followRouter;
