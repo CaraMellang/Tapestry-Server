@@ -7,6 +7,48 @@ import { FileContent } from "aws-sdk/clients/codecommit";
 import validTokenMiddleware from "../lib/validTokenMiddleware";
 
 const groupRouter = express.Router();
+
+groupRouter.get(`/readgroupmember`, async (req: Request, res, next) => {
+  const { group_id, user_id } = req.query;
+  try {
+    const findGroup = await GroupModel.findOne({ _id: group_id }).populate([
+      {
+        path: "group_peoples",
+        select: ["user_name", "email", "user_img"],
+      },
+      { path: "owner_id", select: ["user_name", "email", "user_img"] },
+    ]);
+    if (!findGroup)
+      return res
+        .status(404)
+        .send({ status: 404, message: "존재하지 않는 그룹입니다." });
+
+    const findUser = await UserModel.findOne({ _id: user_id });
+
+    return res.status(200).send({
+      status: 200,
+      data: { group: findGroup, follows: findUser.follow },
+    });
+  } catch (err) {
+    return res.status(500).send({ status: 500, message: "Failed", err });
+  }
+});
+
+groupRouter.patch(
+  `/patchfollow`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const {} = req.body;
+  }
+);
+groupRouter.patch(
+  `/patchunfollow`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const {} = req.body;
+  }
+);
+
 groupRouter.post(
   "/create",
   validTokenMiddleware,
@@ -280,8 +322,10 @@ groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
   }
 });
 
-groupRouter.delete(`/deletegroup` , validTokenMiddleware , async(req:Request,res:Response,next)=>{
-  
-})
+groupRouter.delete(
+  `/deletegroup`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {}
+);
 
 export default groupRouter;
