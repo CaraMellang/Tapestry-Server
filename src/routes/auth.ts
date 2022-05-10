@@ -53,8 +53,12 @@ authRouter.post(`/signup`, async (req, res, next) => {
     password,
     username,
     userImg,
-  }: { email: string; password: string; username: string; userImg: string } =
-    req.body;
+  }: {
+    email: string;
+    password: string;
+    username: string;
+    userImg: string | null;
+  } = req.body;
 
   const date = new Date();
   const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
