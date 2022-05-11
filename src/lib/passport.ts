@@ -13,7 +13,7 @@ function GooglePassportStrategy(passport: PassportStatic) {
       {
         clientID: process.env.CLIENT_ID || "",
         clientSecret: process.env.CLIENT_SECRET || "",
-        callbackURL: `http://localhost:5000/auth/google/callback`,
+        callbackURL: `http://localhost:4000/auth/google/callback`,
       },
       async (accessToken:string, refreshToken:string, profile: Profile, done) => {
         console.log(profile, accessToken);

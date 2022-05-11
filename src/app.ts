@@ -67,7 +67,7 @@ app.use("/comment", commentRouter);
 app.use("/search", searchRouter);
 app.use("/profile", profileRouter);
 
-const port = 5000;
+const port = 4000;
 
 app.listen(port, () => {
   console.log(`listening port ${port}`);
