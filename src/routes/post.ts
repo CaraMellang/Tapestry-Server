@@ -10,6 +10,8 @@ import {
   UserModel,
 } from "../Model/RootModel";
 import likeRouter from "./like";
+import dotenv from "dotenv";
+dotenv.config();
 
 const postRouter = express.Router();
 
@@ -31,9 +33,14 @@ postRouter.post(
     let imageFile: any = req.files;
     let imgLocationArr = imageFile.map((item: any) => item.location);
 
-    const date = new Date();
-    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-    const curr = new Date(utc);
+    let curr: Date;
+    if (process.env.NODE_ENV === "development") {
+      curr = new Date();
+    } else {
+      const date = new Date();
+      const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+      curr = new Date(utc);
+    }
 
     try {
       const isExistGroup = await GroupModel.findOne({ _id: group_id }).exec();
@@ -206,18 +213,222 @@ postRouter.post(`/readgroup`, async (req: Request, res, next) => {
       .skip((page - 1) * 10) //건너뛸 문서
       .limit(10); //가져울 문서 제한
     if (!findPosts) {
-      return res.status(404).send({ status: 404, message: "post not found" });
+      return res.status(404).send({
+        status: 404,
+        message: "존재하지 않거나 마지막 페이지 입니다.",
+      });
     }
-    return res
-      .status(201)
-      .send({ status: 200, message: "success read", data: findPosts });
+    return res.status(201).send({
+      status: 200,
+      message: "success read",
+      data: findPosts,
+    });
   } catch (err) {
     res.status(500).send({ status: 500, message: "Failed", err });
     next(err);
   }
 });
 
-postRouter.post(`/readnew`, async (req: Request, res, next) => {});
+postRouter.get(
+  `/newfeed`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const search = req.query.search as unknown as string;
+    const page = req.query.page as unknown as number;
+    try {
+      const findPosts = await PostModel.find({ search })
+        .populate([
+          "group_id",
+          { path: "owner_id", select: ["user_name", "email", "user_img"] },
+        ])
+        .populate({
+          path: "comment",
+          populate: [
+            {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+            {
+              path: "child_comment",
+              populate: {
+                path: "owner_id",
+                select: ["user_name", "email", "user_img"],
+              },
+            },
+          ],
+        })
+        .sort({ created_at: -1 }) //내림차순 정렬
+        .skip((page - 1) * 10) //건너뛸 문서
+        .limit(10); //가져울 문서 제한
+      if (!findPosts || findPosts.length < 10) {
+        return res.status(404).send({
+          status: 404,
+          message: "존재하지 않거나 마지막 페이지 입니다.",
+          page_end: true,
+        });
+      }
+      return res.status(201).send({
+        status: 200,
+        message: "success read",
+        data: findPosts,
+        page_end: false,
+      });
+    } catch (err) {
+      res.status(500).send({ status: 500, message: "Failed", err });
+      next(err);
+    }
+  }
+);
+
+postRouter.get(
+  "/popularfeed",
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const search = req.query.search as unknown as string;
+    const page = req.query.page as unknown as number;
+    try {
+      const findPosts = await PostModel.find({ search })
+        .populate([
+          "group_id",
+          { path: "owner_id", select: ["user_name", "email", "user_img"] },
+        ])
+        .populate({
+          path: "comment",
+          populate: [
+            {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+            {
+              path: "child_comment",
+              populate: {
+                path: "owner_id",
+                select: ["user_name", "email", "user_img"],
+              },
+            },
+          ],
+        })
+        .sort({ created_at: -1 }) //내림차순 정렬
+        .skip((page - 1) * 10) //건너뛸 문서
+        .limit(10); //가져울 문서 제한
+      if (!findPosts || findPosts.length < 10) {
+        return res.status(404).send({
+          status: 404,
+          message: "존재하지 않거나 마지막 페이지 입니다.",
+          page_end: true,
+        });
+      }
+      return res.status(201).send({
+        status: 200,
+        message: "success read",
+        data: findPosts,
+        page_end: false,
+      });
+    } catch (err) {
+      res.status(500).send({ status: 500, message: "Failed", err });
+      next(err);
+    }
+  }
+);
+
+postRouter.get(
+  "/groupfeed",
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const search = req.query.search as unknown as [];
+    const page = req.query.page as unknown as number;
+    try {
+      const findPosts = await PostModel.find({ search })
+        .populate([
+          "group_id",
+          { path: "owner_id", select: ["user_name", "email", "user_img"] },
+        ])
+        .populate({
+          path: "comment",
+          populate: [
+            {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+            {
+              path: "child_comment",
+              populate: {
+                path: "owner_id",
+                select: ["user_name", "email", "user_img"],
+              },
+            },
+          ],
+        })
+        .sort({ created_at: -1 }) //내림차순 정렬
+        .skip((page - 1) * 10) //건너뛸 문서
+        .limit(10); //가져울 문서 제한
+      if (!findPosts || findPosts.length < 10) {
+        return res.status(404).send({
+          status: 404,
+          message: "존재하지 않거나 마지막 페이지 입니다.",
+          page_end: true,
+        });
+      }
+      return res.status(201).send({
+        status: 200,
+        message: "success read",
+        data: findPosts,
+        page_end: false,
+      });
+    } catch (err) {
+      res.status(500).send({ status: 500, message: "Failed", err });
+      next(err);
+    }
+  }
+);
+
+postRouter.get(`/feeds`, async (req: Request, res: Response, next) => {
+  const search = req.query.search as unknown as string | [];
+  const page = req.query.page as unknown as number;
+  console.log(search, page);
+  try {
+    const findPosts = await PostModel.find({ search })
+      .populate([
+        "group_id",
+        { path: "owner_id", select: ["user_name", "email", "user_img"] },
+      ])
+      .populate({
+        path: "comment",
+        populate: [
+          {
+            path: "owner_id",
+            select: ["user_name", "email", "user_img"],
+          },
+          {
+            path: "child_comment",
+            populate: {
+              path: "owner_id",
+              select: ["user_name", "email", "user_img"],
+            },
+          },
+        ],
+      })
+      .sort({ created_at: -1 }) //내림차순 정렬
+      .skip((page - 1) * 10) //건너뛸 문서
+      .limit(10); //가져울 문서 제한
+    if (!findPosts || findPosts.length < 10) {
+      return res.status(404).send({
+        status: 404,
+        message: "존재하지 않거나 마지막 페이지 입니다.",
+        page_end: true,
+      });
+    }
+    return res.status(201).send({
+      status: 200,
+      message: "success read",
+      data: findPosts,
+      page_end: false,
+    });
+  } catch (err) {
+    res.status(500).send({ status: 500, message: "Failed", err });
+    next(err);
+  }
+});
 
 postRouter.delete(
   `/delete`,
