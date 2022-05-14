@@ -3,6 +3,8 @@ import { UserModel } from "../Model/RootModel";
 import bcrypt from "bcrypt";
 import jwt from "../lib/jwt";
 import passport from "passport";
+import dotenv from "dotenv";
+dotenv.config();
 // const userModel = RootModel.userModel();
 
 const authRouter = express.Router();
@@ -60,9 +62,14 @@ authRouter.post(`/signup`, async (req, res, next) => {
     userImg: string | null;
   } = req.body;
 
-  const date = new Date();
-  const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-  const curr = new Date(utc);
+  let curr: Date;
+    if (process.env.NODE_ENV === "development") {
+      curr = new Date();
+    } else {
+      const date = new Date();
+      const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+      curr = new Date(utc);
+    }
 
   const User = new UserModel({
     email,

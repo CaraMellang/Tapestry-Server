@@ -5,6 +5,8 @@ import jwt from "../lib/jwt";
 import { uploadImage } from "../lib/multer";
 import { FileContent } from "aws-sdk/clients/codecommit";
 import validTokenMiddleware from "../lib/validTokenMiddleware";
+import dotenv from "dotenv";
+dotenv.config();
 
 const groupRouter = express.Router();
 
@@ -84,9 +86,14 @@ groupRouter.post(
     //   versionId: undefined
     // }
 
-    const date = new Date();
-    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-    const curr = new Date(utc);
+    let curr: Date;
+    if (process.env.NODE_ENV === "development") {
+      curr = new Date();
+    } else {
+      const date = new Date();
+      const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+      curr = new Date(utc);
+    }
 
     try {
       const verifyGroupName = await GroupModel.findOne({ group_name }).exec();
@@ -108,7 +115,7 @@ groupRouter.post(
         owner_id: user._id,
         group_name,
         group_description,
-        group_img: imageFile?.location ? imageFile.location : null,
+        group_img: imageFile?.location ? imageFile.location : "",
         created_at: curr,
       });
       const createdGroupData = await Group.save();
