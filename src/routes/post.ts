@@ -73,11 +73,10 @@ postRouter.get(
   `/getpost`,
   validTokenMiddleware,
   async (req: Request, res: Response, next) => {
-    const { group_id, post_id } = req.query;
+    const { post_id } = req.query;
     try {
       const findPost = await PostModel.findOne({
         _id: post_id,
-        group_id,
       })
         .populate([
           "group_id",
