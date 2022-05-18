@@ -235,7 +235,7 @@ postRouter.get(
     const search = req.query.search as unknown as string;
     const page = req.query.page as unknown as number;
     try {
-      const findPosts = await PostModel.find({ search })
+      const findPosts = await PostModel.find({})
         .populate([
           "group_id",
           { path: "owner_id", select: ["user_name", "email", "user_img"] },
@@ -286,7 +286,7 @@ postRouter.get(
     const search = req.query.search as unknown as string;
     const page = req.query.page as unknown as number;
     try {
-      const findPosts = await PostModel.find({ search })
+      const findPosts = await PostModel.find({})
         .populate([
           "group_id",
           { path: "owner_id", select: ["user_name", "email", "user_img"] },
@@ -307,6 +307,7 @@ postRouter.get(
             },
           ],
         })
+        .sort({like_count: -1})
         .sort({ created_at: -1 }) //내림차순 정렬
         .skip((page - 1) * 10) //건너뛸 문서
         .limit(10); //가져울 문서 제한
@@ -337,6 +338,9 @@ postRouter.get(
     const search = req.query.search as unknown as [];
     const page = req.query.page as unknown as number;
     try {
+      if(!search){
+        return res.status(404).send({status:404 , message:"표시할 포스트가 없습니다."})
+      }
       const findPosts = await PostModel.find({ search })
         .populate([
           "group_id",
@@ -386,6 +390,9 @@ postRouter.get(`/feeds`, async (req: Request, res: Response, next) => {
   const page = req.query.page as unknown as number;
   console.log(search, page);
   try {
+    if(!search){
+      return res.status(404).send({status:404 , message:"표시할 포스트가 없습니다."})
+    }
     const findPosts = await PostModel.find({ search })
       .populate([
         "group_id",
