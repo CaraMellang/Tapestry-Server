@@ -12,10 +12,20 @@ import passport from "passport";
 import searchRouter from "./routes/search";
 import profileRouter from "./routes/profile";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3000"
+        : "https://d14utnrre6civk.cloudfront.net",
+    credentials: true,
+  })
+);
 // app.use(cookieParser());
 
 //Express 4.x버전부터 body-parser모듈 내장
