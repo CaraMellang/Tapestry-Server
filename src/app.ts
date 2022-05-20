@@ -13,6 +13,8 @@ import searchRouter from "./routes/search";
 import profileRouter from "./routes/profile";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import fs from "fs";
+import https from "https";
 dotenv.config();
 
 const app = express();
@@ -79,6 +81,17 @@ app.use("/profile", profileRouter);
 
 const port = 4000;
 
-app.listen(port, () => {
-  console.log(`listening port ${port}`);
-});
+if (process.env.NODE_ENV === "development") {
+  app.listen(port, () => {
+    console.log(`listening port ${port}`);
+  });
+} else {
+  const option = {
+    ca: fs.readFileSync(`/etc/letsencrypt/live/mellang.xyz/fullchain.pem`),
+    key: fs.readFileSync(`/etc/letsencrypt/live/mellang.xyz/privkey.pem`),
+    cert: fs.readFileSync(`'/etc/letsencrypt/live/mellang.xyz/cert.pem'`),
+  };
+  https.createServer(option, app).listen(port, () => {
+    console.log(`apply https and listening port ${port}`);
+  });
+}
