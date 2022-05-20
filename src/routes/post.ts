@@ -215,10 +215,7 @@ postRouter.post(`/readgroup`, async (req: Request, res, next) => {
     //   return res.status(404).send({
     //     status: 404,
     //     message: "존재하지 않거나 마지막 페이지 입니다.",
-<<<<<<< HEAD
     //     page_end: true,
-=======
->>>>>>> 429e10aa917818d2e86abc23c1f79b410f23f95a
     //   });
     // }
     return res.status(201).send({
