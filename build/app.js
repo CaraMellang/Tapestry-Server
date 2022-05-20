@@ -16,6 +16,8 @@ const passport_2 = __importDefault(require("passport"));
 const search_1 = __importDefault(require("./routes/search"));
 const profile_1 = __importDefault(require("./routes/profile"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const fs_1 = __importDefault(require("fs"));
+const https_1 = __importDefault(require("https"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
@@ -69,6 +71,18 @@ app.use("/comment", comment_1.default);
 app.use("/search", search_1.default);
 app.use("/profile", profile_1.default);
 const port = 4000;
-app.listen(port, () => {
-    console.log(`listening port ${port}`);
-});
+if (process.env.NODE_ENV === "development") {
+    app.listen(port, () => {
+        console.log(`listening port ${port}`);
+    });
+}
+else {
+    const option = {
+        ca: fs_1.default.readFileSync(`/etc/letsencrypt/live/mellang.xyz/fullchain.pem`),
+        key: fs_1.default.readFileSync(`/etc/letsencrypt/live/mellang.xyz/privkey.pem`),
+        cert: fs_1.default.readFileSync(`'/etc/letsencrypt/live/mellang.xyz/cert.pem'`),
+    };
+    https_1.default.createServer(option, app).listen(port, () => {
+        console.log(`apply https and listening port ${port}`);
+    });
+}
