@@ -26,7 +26,6 @@ app.use(
         ? "http://localhost:3000"
         : "https://d14utnrre6civk.cloudfront.net",
     credentials: true,
-    
   })
 );
 app.use(cookieParser());
