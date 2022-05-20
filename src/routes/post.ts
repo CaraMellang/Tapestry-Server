@@ -211,12 +211,12 @@ postRouter.post(`/readgroup`, async (req: Request, res, next) => {
       .sort({ created_at: -1 }) //내림차순 정렬
       .skip((page - 1) * 10) //건너뛸 문서
       .limit(10); //가져울 문서 제한
-    if (!findPosts || findPosts.length <= 0) {
-      return res.status(404).send({
-        status: 404,
-        message: "존재하지 않거나 마지막 페이지 입니다.",
-      });
-    }
+    // if (!findPosts || findPosts.length <= 0) {
+    //   return res.status(404).send({
+    //     status: 404,
+    //     message: "존재하지 않거나 마지막 페이지 입니다.",
+    //   });
+    // }
     return res.status(201).send({
       status: 200,
       message: "success read",
