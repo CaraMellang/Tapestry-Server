@@ -63,13 +63,13 @@ authRouter.post(`/signup`, async (req, res, next) => {
   } = req.body;
 
   let curr: Date;
-    if (process.env.NODE_ENV === "development") {
-      curr = new Date();
-    } else {
-      const date = new Date();
-      const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-      curr = new Date(utc);
-    }
+  if (process.env.NODE_ENV === "development") {
+    curr = new Date();
+  } else {
+    const date = new Date();
+    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+    curr = new Date(utc);
+  }
 
   const User = new UserModel({
     email,
@@ -132,6 +132,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
       //   httpOnly: true,
       //   maxAge: 60 * 60 * 1000,
       // })
+      res.cookie("access_token", accessToken);
       return res.status(200).send({
         status: 200,
         message: "signin Success",
@@ -143,7 +144,7 @@ authRouter.post(`/signin`, async (req, res, next) => {
           user_img,
           follow,
           group,
-          accessToken,
+          // accessToken,
         },
       });
     }
@@ -182,6 +183,7 @@ authRouter.post("/verify", async (req: Request, res, next) => {
 
       let { email, user_name, created_at, _id, user_img, follow, group } =
         findUser;
+      res.cookie("access_token", token);
       return res.status(201).send({
         status: 200,
         message: "verify token Success",

@@ -26,9 +26,10 @@ app.use(
         ? "http://localhost:3000"
         : "https://d14utnrre6civk.cloudfront.net",
     credentials: true,
+    
   })
 );
-// app.use(cookieParser());
+app.use(cookieParser());
 
 //Express 4.x버전부터 body-parser모듈 내장
 app.use(express.json());
@@ -89,7 +90,7 @@ if (process.env.NODE_ENV === "development") {
   const option = {
     ca: fs.readFileSync(`/etc/letsencrypt/live/mellang.xyz/fullchain.pem`),
     key: fs.readFileSync(`/etc/letsencrypt/live/mellang.xyz/privkey.pem`),
-    cert: fs.readFileSync(`'/etc/letsencrypt/live/mellang.xyz/cert.pem'`),
+    cert: fs.readFileSync(`/etc/letsencrypt/live/mellang.xyz/cert.pem`),
   };
   https.createServer(option, app).listen(port, () => {
     console.log(`apply https and listening port ${port}`);
