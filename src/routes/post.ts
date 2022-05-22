@@ -288,6 +288,8 @@ postRouter.get(
     const page = req.query.page as unknown as number;
     try {
       const findPosts = await PostModel.find({})
+        .where("like_count")
+        .gt(0)
         .populate([
           "group_id",
           { path: "owner_id", select: ["user_name", "email", "user_img"] },
