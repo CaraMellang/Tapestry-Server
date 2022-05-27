@@ -260,11 +260,7 @@ groupRouter.post(
   `/readgroup`,
   validTokenMiddleware,
   async (req: Request, res, next) => {
-    const {
-      body: { page },
-    }: {
-      body: { page: number };
-    } = req;
+    const { page }: { page: number } = req.body;
 
     try {
       const findUser = await UserModel.findOne(
