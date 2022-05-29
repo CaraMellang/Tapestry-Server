@@ -335,18 +335,27 @@ postRouter.get(
 );
 
 postRouter.get(
-  "/groupfeed",
+  "/followingfeed",
   validTokenMiddleware,
   async (req: Request, res: Response, next) => {
-    const search = req.query.search as unknown as [];
+    // const search = req.query.search as unknown as [];
     const page = req.query.page as unknown as number;
     try {
-      if (!search) {
+      // if (!search) {
+      //   return res
+      //     .status(404)
+      //     .send({ status: 404, message: "표시할 포스트가 없습니다." });
+      // }
+      const findUser = await UserModel.findOne(
+        { email: res.locals.user.email },
+        ["follow"]
+      );
+      if (!findUser)
         return res
           .status(404)
-          .send({ status: 404, message: "표시할 포스트가 없습니다." });
-      }
-      const findPosts = await PostModel.find({ search })
+          .send({ status: 404, message: "유저가 존재하지 않습니다!" });
+
+      const findPosts = await PostModel.find({ owner_id: findUser.follow })
         .populate([
           "group_id",
           { path: "owner_id", select: ["user_name", "email", "user_img"] },
@@ -370,6 +379,30 @@ postRouter.get(
         .sort({ created_at: -1 }) //내림차순 정렬
         .skip((page - 1) * 10) //건너뛸 문서
         .limit(10); //가져울 문서 제한
+      // const findPosts = await PostModel.find({ search })
+      //   .populate([
+      //     "group_id",
+      //     { path: "owner_id", select: ["user_name", "email", "user_img"] },
+      //   ])
+      //   .populate({
+      //     path: "comment",
+      //     populate: [
+      //       {
+      //         path: "owner_id",
+      //         select: ["user_name", "email", "user_img"],
+      //       },
+      //       {
+      //         path: "child_comment",
+      //         populate: {
+      //           path: "owner_id",
+      //           select: ["user_name", "email", "user_img"],
+      //         },
+      //       },
+      //     ],
+      //   })
+      //   .sort({ created_at: -1 }) //내림차순 정렬
+      //   .skip((page - 1) * 10) //건너뛸 문서
+      //   .limit(10); //가져울 문서 제한
       if (!findPosts || findPosts.length <= 0) {
         return res.status(404).send({
           status: 404,
