@@ -77,7 +77,7 @@ profileRouter.patch(
 );
 
 profileRouter.get(
-  `/`,
+  `/getmyposts`,
   validTokenMiddleware,
   async (req: Request, res: Response, next) => {
     const user_id = req.query.user_id as unknown as string;
@@ -111,6 +111,33 @@ profileRouter.get(
         return res.status(404).send({ status: 404, page_end: true });
 
       return res.status(200).send({ status: 200, data: findPosts });
+    } catch (err) {
+      return res.status(500).send({ status: 500, message: "Failed", err });
+    }
+  }
+);
+
+profileRouter.get(
+  `/getmyfollowing`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const user_id = req.query.user_id as unknown as string;
+    const page = req.query.page as unknown as number;
+    try {
+      const findFollowers = await UserModel.findOne({ _id: user_id }).populate([
+        { path: "follow", select: ["user_name", "email", "user_img"] },
+      ]);
+      //후에 follow 콜렉션을 만들어서 관리해서 부분적 팔로윙만 가져오게 하자
+      const following: Array<object> = findFollowers.follow;
+      if (!findFollowers)
+        return res.status(404).send({ status: 404, page_end: true });
+
+      return res
+        .status(200)
+        .send({
+          status: 200,
+          data: following.slice((page - 1) * 10, page * 10 - 1),
+        });
     } catch (err) {
       return res.status(500).send({ status: 500, message: "Failed", err });
     }
