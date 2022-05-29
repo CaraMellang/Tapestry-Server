@@ -137,6 +137,7 @@ profileRouter.get(
         .send({
           status: 200,
           data: following.slice((page - 1) * 10, page * 10 - 1),
+          page_end:following.length < 10 ? true : false   
         });
     } catch (err) {
       return res.status(500).send({ status: 500, message: "Failed", err });
