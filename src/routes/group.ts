@@ -115,7 +115,7 @@ groupRouter.post(
         owner_id: user._id,
         group_name,
         group_description,
-        group_img: imageFile?.location ? imageFile.location : "",
+        group_img: imageFile?.location ? imageFile.location : null,
         created_at: curr,
       });
       const createdGroupData = await Group.save();

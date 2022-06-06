@@ -9,7 +9,7 @@ export default function groupModel() {
     },
     group_name: { type: String, default: "" },
     group_description: { type: String, default: "" },
-    group_img: { type: String, default: "" },
+    group_img: { type: String || null, default: "" },
     group_people_count: { type: Number, default: 1 },
     group_peoples: {
       type: [Mongoose.Types.ObjectId],

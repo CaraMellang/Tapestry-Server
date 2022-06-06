@@ -414,7 +414,7 @@ postRouter.get(
         status: 200,
         message: "success read",
         data: findPosts,
-        page_end: false,
+        page_end:  !findPosts || findPosts.length <= 0 ? true : false,
       });
     } catch (err) {
       res.status(500).send({ status: 500, message: "Failed", err });
