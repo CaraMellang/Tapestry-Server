@@ -46,9 +46,14 @@ ChildCommentRouter.post(
       text: string;
     } = req.body;
 
-    const date = new Date();
-    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-    const curr = new Date(utc);
+    let curr: Date;
+    if (process.env.NODE_ENV === "development") {
+      curr = new Date();
+    } else {
+      const date = new Date();
+      const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+      curr = new Date(utc);
+    }
 
     try {
       const findUser = await UserModel.findOne({

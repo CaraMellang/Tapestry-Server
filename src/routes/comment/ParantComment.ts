@@ -1,4 +1,4 @@
-import express, { Request } from "express";
+import express, { Request, Response } from "express";
 import jwt from "../../lib/jwt";
 import validTokenMiddleware from "../../lib/validTokenMiddleware";
 import {
@@ -51,9 +51,14 @@ ParantCommentRouter.post(
       body: { post_id: string; user_id: string; text: string };
     } = req;
 
-    const date = new Date();
-    const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
-    const curr = new Date(utc);
+    let curr: Date;
+    if (process.env.NODE_ENV === "development") {
+      curr = new Date();
+    } else {
+      const date = new Date();
+      const utc = date.getTime() + date.getTimezoneOffset() * -1 * 60 * 1000;
+      curr = new Date(utc);
+    }
 
     try {
       const findPost = await PostModel.findOne({ _id: post_id });
@@ -84,7 +89,7 @@ ParantCommentRouter.post(
 ParantCommentRouter.delete(
   `/delete`,
   validTokenMiddleware,
-  async (req: Request, res, next) => {
+  async (req: Request, res: Response, next) => {
     const { comment_id, user_id }: { comment_id: string; user_id: string } =
       req.body;
     try {
@@ -95,6 +100,12 @@ ParantCommentRouter.delete(
         return res
           .status(404)
           .send({ status: 404, message: "comment not found" });
+
+      if (user_id !== findParantComment.owner_id.toString()) {
+        return res
+          .status(403)
+          .send({ status: 403, message: "권한이 없습니다." });
+      }
       await ParantCommentModel.deleteOne({ _id: comment_id });
       await ChildCommentModel.deleteMany({ parant_comment_id: comment_id });
 
