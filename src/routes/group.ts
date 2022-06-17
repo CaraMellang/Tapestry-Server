@@ -289,6 +289,31 @@ groupRouter.post(
   }
 );
 
+groupRouter.patch(
+  `/patchgroup`,
+  validTokenMiddleware,
+  async (req: Request, res: Response, next) => {
+    const { group_id, description }: { group_id: string; description: string } =
+      req.body;
+    try {
+      const findGroup = await GroupModel.findOne({ _id: group_id });
+      if (!findGroup)
+        return res
+          .status(404)
+          .send({ status: 404, message: "없는 그룹입니다." });
+
+      await GroupModel.updateOne(
+        { _id: group_id },
+        { group_description: description }
+      );
+      return res.status(200).send({status:200 , message:"수정 성공"});
+    } catch (err) {
+      console.log(err);
+      return res.status(500).send({ status: 500, message: "Failed", err });
+    }
+  }
+);
+
 groupRouter.post(`/groupdetail`, async (req: Request, res, next) => {
   const {
     body: { group_id, user_id },
