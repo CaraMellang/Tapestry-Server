@@ -7,7 +7,9 @@ export default function groupMemberModel() {
       required: true,
       ref: "Group",
     },
-    group_memver_count: { type: Number, default: 1 },
+    group_owner: { type: Mongoose.Types.ObjectId, required: true, ref: "User" },
+    group_admin:{type:[Mongoose.Types.ObjectId],ref:"User"},
+    group_member_count: { type: Number, default: 1 },
     group_members: {
       type: [Mongoose.Types.ObjectId],
       default: [],
